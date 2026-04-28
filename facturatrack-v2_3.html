@@ -1,0 +1,1481 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FacturaTrack — Facturation Électronique</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f0f5fb;
+  --surface:#ffffff;
+  --surface2:#e8f0fb;
+  --surface3:#d6e5f7;
+  --surface4:#c4d8f3;
+  --border:rgba(37,99,235,0.10);
+  --border2:rgba(37,99,235,0.18);
+  --border3:rgba(37,99,235,0.28);
+  --text:#0f2444;
+  --text2:#3d6089;
+  --text3:#7da0c4;
+  --accent:#1e6fd9;
+  --accent-light:#dbeafe;
+  --accent2:#2563eb;
+  --sidebar-bg:#1a3a6b;
+  --sidebar-hover:rgba(255,255,255,0.08);
+  --sidebar-active:rgba(255,255,255,0.15);
+  --sidebar-text:rgba(255,255,255,0.75);
+  --sidebar-text-active:#ffffff;
+  --sidebar-border:rgba(255,255,255,0.10);
+  --green:#059669;--green-bg:#d1fae5;
+  --amber:#d97706;--amber-bg:#fef3c7;
+  --red:#dc2626;--red-bg:#fee2e2;
+  --orange:#ea580c;--orange-bg:#ffedd5;
+  --teal:#0891b2;--teal-bg:#cffafe;
+  --shadow:0 1px 4px rgba(30,111,217,0.08),0 2px 12px rgba(30,111,217,0.06);
+  --shadow-md:0 4px 20px rgba(30,111,217,0.12);
+  --font:'Segoe UI',system-ui,sans-serif;
+}
+body{font-family:var(--font);background:var(--bg);color:var(--text);min-height:100vh;overflow:hidden}
+.app{display:flex;height:100vh}
+.hidden{display:none!important}
+
+/* SIDEBAR */
+.sidebar{width:232px;background:var(--sidebar-bg);border-right:none;display:flex;flex-direction:column;flex-shrink:0;box-shadow:2px 0 16px rgba(26,58,107,0.18)}
+.sidebar-logo{padding:18px 16px 14px;border-bottom:1px solid var(--sidebar-border)}
+.logo-mark{display:flex;align-items:center;gap:10px}
+.logo-icon{width:32px;height:32px;background:linear-gradient(135deg,#60a5fa,#93c5fd);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0;box-shadow:0 2px 8px rgba(96,165,250,.4)}
+.logo-text{font-size:15px;font-weight:700;letter-spacing:-.3px;color:#fff}
+.logo-sub{font-size:9px;color:rgba(255,255,255,.4);letter-spacing:1.5px;text-transform:uppercase;margin-top:1px}
+.sidebar-nav{flex:1;padding:10px 8px;overflow-y:auto}
+.nav-section{margin-bottom:18px}
+.nav-section-title{font-size:9px;color:rgba(255,255,255,.3);letter-spacing:1.3px;text-transform:uppercase;padding:0 8px;margin-bottom:5px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:7px 10px;border-radius:7px;cursor:pointer;font-size:12px;color:var(--sidebar-text);transition:all .15s;margin-bottom:1px;user-select:none}
+.nav-item:hover{background:var(--sidebar-hover);color:var(--sidebar-text-active)}
+.nav-item.active{background:var(--sidebar-active);color:#fff;font-weight:600}
+.nav-item.admin-active{background:rgba(239,68,68,.2);color:#fca5a5;font-weight:600}
+.nav-icon{width:15px;text-align:center;font-size:13px;flex-shrink:0}
+.nav-badge{margin-left:auto;background:#ef4444;color:#fff;font-size:9px;padding:2px 5px;border-radius:8px;font-weight:700}
+.nav-sep{height:1px;background:var(--sidebar-border);margin:8px 8px 12px}
+.sidebar-user{padding:10px 12px;border-top:1px solid var(--sidebar-border);display:flex;align-items:center;gap:9px;cursor:pointer;transition:background .15s}
+.sidebar-user:hover{background:var(--sidebar-hover)}
+.user-av{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#60a5fa,#93c5fd);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#1a3a6b;flex-shrink:0}
+.user-name{font-size:11px;font-weight:600;color:#fff}
+.user-role-label{font-size:9px;color:rgba(255,255,255,.4)}
+.admin-badge-pill{margin-left:auto;font-size:9px;background:rgba(239,68,68,.25);color:#fca5a5;padding:2px 6px;border-radius:8px;border:1px solid rgba(239,68,68,.3)}
+
+/* MAIN */
+.main{flex:1;display:flex;flex-direction:column;overflow:hidden;background:var(--bg)}
+.header{background:var(--surface);border-bottom:1px solid var(--border);padding:0 22px;height:54px;display:flex;align-items:center;gap:14px;flex-shrink:0;box-shadow:var(--shadow)}
+.header-title{font-size:15px;font-weight:700;color:var(--text)}
+.header-bc{font-size:11px;color:var(--text3)}
+.hspacer{flex:1}
+.btn{display:inline-flex;align-items:center;gap:5px;padding:6px 13px;border-radius:7px;font-size:12px;font-weight:500;cursor:pointer;border:none;transition:all .15s;font-family:var(--font)}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 6px rgba(30,111,217,.25)}
+.btn-primary:hover{background:var(--accent2);box-shadow:0 3px 10px rgba(30,111,217,.35)}
+.btn-ghost{background:#fff;color:var(--text2);border:1px solid var(--border2)}
+.btn-ghost:hover{background:var(--surface2);color:var(--text)}
+.btn-danger{background:var(--red-bg);color:var(--red);border:1px solid rgba(220,38,38,.22)}
+.btn-danger:hover{background:#fecaca}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-xs{padding:3px 8px;font-size:10px}
+.content{flex:1;overflow-y:auto;padding:22px}
+
+/* STATS */
+.stats-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:20px}
+.stat-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:16px;box-shadow:var(--shadow)}
+.stat-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:7px}
+.stat-value{font-size:26px;font-weight:700;line-height:1;color:var(--text)}
+.stat-sub{font-size:10px;color:var(--text3);margin-top:4px}
+.stat-dot{width:7px;height:7px;border-radius:50%;display:inline-block;margin-right:4px}
+
+/* FILTERS */
+.filters-bar{display:flex;align-items:center;gap:9px;margin-bottom:18px;flex-wrap:wrap}
+.filter-group{display:flex;align-items:center;gap:5px}
+.filter-label{font-size:11px;color:var(--text3)}
+select,input[type=text],input[type=date]{background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:5px 9px;border-radius:6px;font-size:11px;font-family:var(--font);outline:none;box-shadow:0 1px 3px rgba(30,111,217,.04)}
+select:focus,input[type=text]:focus,input[type=date]:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(30,111,217,.1)}
+.search-input{width:200px;padding-left:26px}
+.view-toggle{display:flex;background:var(--surface2);border-radius:6px;padding:3px;margin-left:auto;border:1px solid var(--border)}
+.view-btn{padding:4px 10px;border-radius:4px;font-size:11px;cursor:pointer;color:var(--text3);transition:all .15s;border:none;background:transparent;font-family:var(--font)}
+.view-btn.active{background:var(--surface);color:var(--text);box-shadow:0 1px 4px rgba(30,111,217,.12)}
+
+/* TABLE */
+.ticket-table{width:100%;border-collapse:collapse}
+.ticket-table th{text-align:left;font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;padding:10px 13px;border-bottom:2px solid var(--border2);background:var(--surface2);font-weight:600}
+.ticket-row{border-bottom:1px solid var(--border);transition:background .1s;cursor:pointer;background:var(--surface)}
+.ticket-row:hover{background:#f0f7ff}
+.ticket-row td{padding:11px 13px;font-size:12px;vertical-align:middle}
+.ticket-id{font-family:monospace;font-size:10px;color:var(--text3);background:var(--surface2);padding:2px 5px;border-radius:3px;border:1px solid var(--border)}
+.ticket-title{font-weight:500;color:var(--text);max-width:280px}
+.ticket-title-sub{font-size:10px;color:var(--text3);margin-top:2px}
+.progress-ring{font-size:10px;color:var(--text3);display:flex;align-items:center;gap:5px}
+.deadline{font-size:11px}
+.deadline.overdue{color:var(--red);font-weight:600}
+.deadline.soon{color:var(--amber);font-weight:600}
+.deadline.ok{color:var(--text3)}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;gap:3px;padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:.2px}
+.badge-critical{background:#fee2e2;color:#b91c1c;border:1px solid #fecaca}
+.badge-high{background:#ffedd5;color:#c2410c;border:1px solid #fed7aa}
+.badge-medium{background:#fef3c7;color:#92400e;border:1px solid #fde68a}
+.badge-low{background:#d1fae5;color:#065f46;border:1px solid #a7f3d0}
+.badge-open{background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe}
+.badge-in-progress{background:#ede9fe;color:#6d28d9;border:1px solid #ddd6fe}
+.badge-resolved{background:#d1fae5;color:#065f46;border:1px solid #a7f3d0}
+.badge-closed{background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0}
+.badge-source{background:var(--surface2);color:var(--text2);border:1px solid var(--border)}
+.b-admin{background:#fee2e2;color:#b91c1c;border:1px solid #fecaca}
+.b-pm{background:#dbeafe;color:#1d4ed8;border:1px solid #bfdbfe}
+.b-dev{background:#ede9fe;color:#6d28d9;border:1px solid #ddd6fe}
+.b-metier{background:#d1fae5;color:#065f46;border:1px solid #a7f3d0}
+.b-viewer{background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0}
+.b-active{background:#d1fae5;color:#065f46}
+.b-inactive{background:#f1f5f9;color:#64748b}
+.b-pending{background:#fef3c7;color:#92400e}
+
+/* AVATAR */
+.av{display:inline-flex;align-items:center;justify-content:center;border-radius:50%;font-weight:700;flex-shrink:0}
+.av-sm{width:24px;height:24px;font-size:9px}
+.av-md{width:28px;height:28px;font-size:10px}
+.av-lg{width:36px;height:36px;font-size:12px}
+
+/* KANBAN */
+.kanban-board{display:flex;gap:13px;overflow-x:auto;padding-bottom:14px}
+.kanban-col{min-width:230px;flex-shrink:0}
+.kanban-col-header{display:flex;align-items:center;justify-content:space-between;padding:9px 11px;background:var(--surface2);border-radius:8px 8px 0 0;border-bottom:2px solid var(--border2);margin-bottom:8px}
+.kanban-col-title{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--text2)}
+.kanban-count{font-size:10px;background:var(--surface);padding:2px 6px;border-radius:8px;color:var(--text3);border:1px solid var(--border)}
+.kanban-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:11px;margin-bottom:7px;cursor:pointer;transition:all .15s;box-shadow:var(--shadow)}
+.kanban-card:hover{border-color:var(--accent);box-shadow:var(--shadow-md);transform:translateY(-1px)}
+.kanban-card-id{font-family:monospace;font-size:9px;color:var(--text3)}
+.kanban-card-title{font-size:12px;font-weight:500;margin:3px 0 7px;line-height:1.4;color:var(--text)}
+.kanban-card-footer{display:flex;align-items:center;justify-content:space-between}
+
+/* MODALS */
+.modal-overlay{position:fixed;inset:0;background:rgba(15,36,68,.4);z-index:100;display:flex;align-items:flex-start;justify-content:center;padding:36px 20px;overflow-y:auto;backdrop-filter:blur(3px)}
+.modal-overlay.hidden{display:none!important}
+.modal{background:var(--surface);border:1px solid var(--border2);border-radius:14px;width:820px;max-width:100%;box-shadow:var(--shadow-md)}
+.modal-header{padding:18px 22px 0;display:flex;align-items:flex-start;gap:12px}
+.modal-id{font-family:monospace;font-size:10px;color:var(--text3);background:var(--surface2);padding:2px 7px;border-radius:4px;border:1px solid var(--border)}
+.modal-title-input{font-size:19px;font-weight:700;background:transparent;border:none;color:var(--text);width:100%;outline:none;font-family:var(--font)}
+.modal-body{display:grid;grid-template-columns:1fr 230px;gap:0}
+.modal-left{padding:14px 22px;border-right:1px solid var(--border)}
+.modal-right{padding:14px;background:var(--surface2);border-radius:0 0 14px 0}
+.modal-section{margin-bottom:18px}
+.modal-section-title{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.8px;margin-bottom:9px;font-weight:600}
+.modal-desc{font-size:12px;color:var(--text2);line-height:1.7;background:var(--surface2);border-radius:8px;padding:11px;border:1px solid var(--border)}
+.meta-row{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border);font-size:11px}
+.meta-row:last-child{border-bottom:none}
+.meta-key{color:var(--text3);font-weight:500}
+.meta-val{color:var(--text);font-weight:500;display:flex;align-items:center;gap:5px}
+.history-item{display:flex;gap:11px;padding:9px 0;position:relative}
+.history-item::before{content:'';position:absolute;left:14px;top:34px;bottom:-9px;width:1px;background:var(--border2)}
+.history-item:last-child::before{display:none}
+.history-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;flex-shrink:0}
+.history-user{font-size:11px;font-weight:600;color:var(--text)}
+.history-action{font-size:11px;color:var(--text3)}
+.history-time{font-size:10px;color:var(--text3)}
+.history-comment{background:var(--surface);border-radius:6px;padding:7px 9px;margin-top:5px;font-size:11px;color:var(--text2);line-height:1.5;border:1px solid var(--border)}
+.comment-input{width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text);border-radius:8px;padding:9px 11px;font-size:12px;font-family:var(--font);resize:vertical;min-height:70px;outline:none}
+.comment-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(30,111,217,.1)}
+.close-btn{background:none;border:none;color:var(--text3);cursor:pointer;font-size:17px;padding:4px;line-height:1;transition:color .15s}
+.close-btn:hover{color:var(--text)}
+
+/* ADMIN MODALS */
+.adm-modal-bg{position:fixed;inset:0;background:rgba(15,36,68,.4);z-index:200;display:flex;align-items:flex-start;justify-content:center;padding:40px 20px;overflow-y:auto;backdrop-filter:blur(3px)}
+.adm-modal-bg.hidden{display:none!important}
+.adm-modal{background:var(--surface);border:1px solid var(--border2);border-radius:14px;width:540px;max-width:100%;box-shadow:var(--shadow-md)}
+.adm-modal-head{padding:17px 20px 0;display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.adm-modal-title{font-size:14px;font-weight:700;color:var(--text)}
+.adm-modal-body{padding:0 20px 20px}
+.adm-modal-foot{padding:11px 20px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end;background:var(--surface2);border-radius:0 0 14px 14px}
+.form-row{margin-bottom:12px}
+.form-label{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px;display:block;font-weight:600}
+.form-input{width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text);border-radius:6px;padding:7px 10px;font-size:12px;font-family:var(--font);outline:none}
+.form-input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(30,111,217,.1)}
+textarea.form-input{min-height:70px;resize:vertical}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.close-x{background:none;border:none;color:var(--text3);cursor:pointer;font-size:15px;line-height:1;padding:4px;transition:color .15s}
+.close-x:hover{color:var(--text)}
+
+/* PERM TOGGLE */
+.perm-row{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border)}
+.perm-row:last-child{border-bottom:none}
+.perm-name{font-size:11px;font-weight:500;color:var(--text)}
+.perm-hint{font-size:10px;color:var(--text3);margin-top:1px}
+.toggle{width:34px;height:18px;border-radius:9px;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0;border:none}
+.toggle.on{background:var(--accent)}
+.toggle.off{background:#cbd5e1}
+.toggle::after{content:'';position:absolute;top:2px;width:14px;height:14px;border-radius:50%;background:#fff;transition:left .2s;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+.toggle.on::after{left:18px}
+.toggle.off::after{left:2px}
+
+/* ADMIN TABLE */
+.data-table{width:100%;border-collapse:collapse}
+.data-table th{text-align:left;font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.7px;padding:9px 12px;border-bottom:2px solid var(--border2);background:var(--surface2);font-weight:600}
+.data-table tr.drow{border-bottom:1px solid var(--border);transition:background .1s;cursor:pointer;background:var(--surface)}
+.data-table tr.drow:hover{background:#f0f7ff}
+.data-table td{padding:10px 12px;font-size:12px;vertical-align:middle;color:var(--text)}
+
+/* ROLE CARDS */
+.role-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:11px;margin-bottom:22px}
+.role-card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;cursor:pointer;transition:all .15s;box-shadow:var(--shadow)}
+.role-card:hover{border-color:var(--accent);box-shadow:var(--shadow-md)}
+.role-card.selected{border:2px solid var(--accent);background:var(--accent-light)}
+.role-color-bar{width:100%;height:3px;border-radius:2px;margin-bottom:11px}
+.role-card-name{font-size:12px;font-weight:600;margin-bottom:3px;color:var(--text)}
+.role-card-desc{font-size:10px;color:var(--text3);margin-bottom:9px;line-height:1.5}
+.role-card-meta{display:flex;align-items:center;justify-content:space-between}
+
+/* PERM MATRIX */
+.perm-on{display:inline-flex;width:18px;height:18px;border-radius:50%;background:#d1fae5;border:1px solid #6ee7b7;align-items:center;justify-content:center}
+.perm-off{display:inline-flex;width:18px;height:18px;border-radius:50%;background:#f1f5f9;border:1px solid #e2e8f0;align-items:center;justify-content:center}
+.p-check{color:#059669;font-size:10px;font-weight:700}
+.p-dash{color:#94a3b8;font-size:12px}
+
+/* AUDIT LOG */
+.log-item{display:flex;gap:11px;padding:9px 0;border-bottom:1px solid var(--border)}
+.log-item:last-child{border-bottom:none}
+.log-icon{width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0}
+.log-add{background:#d1fae5}
+.log-edit{background:#dbeafe}
+.log-del{background:#fee2e2}
+.log-lock{background:#fef3c7}
+.log-action{font-size:11px;line-height:1.45;color:var(--text)}
+.log-meta{font-size:10px;color:var(--text3);margin-top:2px}
+
+/* MISC */
+.card{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;box-shadow:var(--shadow)}
+.section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:13px}
+.section-title{font-size:13px;font-weight:700;color:var(--text)}
+.sdot{width:6px;height:6px;border-radius:50%;display:inline-block;margin-right:4px}
+.search-wrap{position:relative;flex:1;max-width:240px}
+.search-wrap input{width:100%;background:var(--surface);border:1px solid var(--border2);color:var(--text);padding:6px 9px 6px 26px;border-radius:6px;font-size:11px;font-family:var(--font);outline:none}
+.search-wrap input:focus{border-color:var(--accent);box-shadow:0 0 0 3px rgba(30,111,217,.1)}
+.search-icon{position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--text3);font-size:11px;pointer-events:none}
+.admin-header-banner{background:#fef3c7;border-bottom:1px solid #fde68a;padding:6px 22px;font-size:11px;color:#92400e;display:flex;align-items:center;gap:8px;flex-shrink:0}
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--surface2)}
+::-webkit-scrollbar-thumb{background:var(--surface3);border-radius:3px}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.fade-in{animation:fadeIn .18s ease}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ══════════════════ SIDEBAR ══════════════════ -->
+<nav class="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">⚡</div>
+      <div>
+        <div class="logo-text">FacturaTrack</div>
+        <div class="logo-sub" id="sidebar-context-label">Facturation Élec.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sidebar-nav" id="sidebar-nav-main">
+    <div class="nav-section">
+      <div class="nav-section-title">Projet</div>
+      <div class="nav-item active" id="nav-board" onclick="showView('board',this)"><span class="nav-icon">📋</span>Tableau de bord</div>
+      <div class="nav-item" id="nav-kanban" onclick="showView('kanban',this)"><span class="nav-icon">🗂️</span>Kanban</div>
+      <div class="nav-item" id="nav-recette" onclick="showView('recette',this)"><span class="nav-icon">✅</span>Recette<span class="nav-badge" id="recette-badge">8</span></div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Filtres rapides</div>
+      <div class="nav-item" onclick="filterByStatus('open');showView('board',null)"><span class="nav-icon" style="color:#4f8ef7">●</span>Ouverts</div>
+      <div class="nav-item" onclick="filterByStatus('in_progress');showView('board',null)"><span class="nav-icon" style="color:#7c4dff">●</span>En cours</div>
+      <div class="nav-item" onclick="filterByCriticality('critical');showView('board',null)"><span class="nav-icon" style="color:#ff4757">●</span>Critiques</div>
+      <div class="nav-item" onclick="filterByAssigned();showView('board',null)"><span class="nav-icon">👤</span>Mes tickets</div>
+    </div>
+    <div class="nav-section">
+      <div class="nav-section-title">Rapports</div>
+      <div class="nav-item" id="nav-stats" onclick="showView('stats',this)"><span class="nav-icon">📊</span>Statistiques</div>
+      <div class="nav-item" id="nav-timing" onclick="showView('timing',this)"><span class="nav-icon">⏱️</span>Timing résolution</div>
+    </div>
+    <div class="nav-sep"></div>
+    <div class="nav-section" id="admin-nav-section" style="display:none">
+      <div class="nav-section-title">Administration</div>
+      <div class="nav-item" id="nav-adm-users" onclick="showAdminView('adm-users',this)"><span class="nav-icon">👥</span>Utilisateurs</div>
+      <div class="nav-item" id="nav-adm-roles" onclick="showAdminView('adm-roles',this)"><span class="nav-icon">🛡️</span>Rôles & Permissions</div>
+      <div class="nav-item" id="nav-adm-matrix" onclick="showAdminView('adm-matrix',this)"><span class="nav-icon">⊞</span>Matrice d'accès</div>
+      <div class="nav-item" id="nav-adm-audit" onclick="showAdminView('adm-audit',this)"><span class="nav-icon">📋</span>Journal d'audit</div>
+      <div class="nav-item" id="nav-adm-sessions" onclick="showAdminView('adm-sessions',this)"><span class="nav-icon" style="color:#fca5a5">◉</span>Sessions actives</div>
+    </div>
+  </div>
+
+  <div class="sidebar-user" onclick="openProfileSwitcher()" title="Changer de profil">
+    <div class="user-av" id="sb-av">JD</div>
+    <div style="flex:1;min-width:0">
+      <div class="user-name" id="sb-name">Jean Dupont</div>
+      <div class="user-role-label" id="sb-role">Chef de projet</div>
+    </div>
+    <span class="admin-badge-pill" id="sb-admin-pill" style="display:none">Admin</span>
+    <span style="color:rgba(255,255,255,.3);font-size:11px">⇄</span>
+  </div>
+</nav>
+
+<!-- ══════════════════ MAIN ══════════════════ -->
+<div class="main">
+  <!-- HEADER -->
+  <div class="header">
+    <div>
+      <div class="header-title" id="view-title">Tableau de bord</div>
+      <div class="header-bc" id="view-bc">Facturation Électronique › Tous les tickets</div>
+    </div>
+    <div class="hspacer"></div>
+    <div id="header-actions">
+      <button class="btn btn-ghost btn-sm" onclick="showView('stats',document.getElementById('nav-stats'))">📊 Rapports</button>
+      <button class="btn btn-primary btn-sm" onclick="openNewTicketModal()">+ Nouveau ticket</button>
+    </div>
+  </div>
+
+  <!-- ADMIN BANNER (shown in admin views) -->
+  <div class="admin-header-banner hidden" id="admin-banner">
+    🔐 Console d'administration — Modifications appliquées immédiatement
+  </div>
+
+  <!-- ─── TICKET VIEWS ─── -->
+  <div class="content fade-in" id="view-board">
+    <div class="stats-bar" id="stats-bar"></div>
+    <div class="filters-bar">
+      <div class="filter-group">
+        <input type="text" class="search-input" placeholder="🔍  Rechercher..." id="search-input" oninput="applyFilters()" style="padding-left:26px">
+      </div>
+      <div class="filter-group"><span class="filter-label">Criticité</span>
+        <select id="filter-crit" onchange="applyFilters()"><option value="">Toutes</option><option value="critical">Critique</option><option value="high">Haute</option><option value="medium">Moyenne</option><option value="low">Faible</option></select>
+      </div>
+      <div class="filter-group"><span class="filter-label">Source</span>
+        <select id="filter-source" onchange="applyFilters()"><option value="">Toutes</option><option value="ERP">ERP</option><option value="EDI">EDI</option><option value="Esker">Esker</option><option value="Données">Données</option></select>
+      </div>
+      <div class="filter-group"><span class="filter-label">Périmètre</span>
+        <select id="filter-perimeter" onchange="applyFilters()"><option value="">Tous</option><option value="Immo / Sage">Immo / Sage</option><option value="FG / Sage">FG / Sage</option><option value="Marchandise / Sage">Marchandise / Sage</option><option value="Marchandise SAP">Marchandise SAP</option></select>
+      </div>
+      <div class="filter-group"><span class="filter-label">Type</span>
+        <select id="filter-type" onchange="applyFilters()"><option value="">Tous</option><option value="anomalie">Anomalie</option><option value="evolution">Évolution</option></select>
+      </div>
+      <div class="filter-group"><span class="filter-label">Statut</span>
+        <select id="filter-status" onchange="applyFilters()"><option value="">Tous</option><option value="open">Ouvert</option><option value="in_progress">En cours</option><option value="resolved">Résolu</option><option value="closed">Fermé</option></select>
+      </div>
+      <div class="filter-group"><span class="filter-label">Assigné</span>
+        <select id="filter-assignee" onchange="applyFilters()"><option value="">Tous</option></select>
+      </div>
+      <div class="view-toggle">
+        <button class="view-btn active" onclick="this.parentNode.querySelectorAll('.view-btn').forEach(b=>b.classList.remove('active'));this.classList.add('active')">☰ Liste</button>
+        <button class="view-btn" onclick="showView('kanban',document.getElementById('nav-kanban'))">⊞ Kanban</button>
+      </div>
+    </div>
+    <table class="ticket-table">
+      <thead><tr>
+        <th style="width:80px">ID</th><th>Titre</th><th style="width:80px">Type</th><th style="width:95px">Criticité</th>
+        <th style="width:80px">Source</th><th style="width:110px">Périmètre</th><th style="width:78px">Statut</th>
+        <th style="width:105px">Assigné à</th><th style="width:110px">Échéance</th><th style="width:80px">SLA</th>
+      </tr></thead>
+      <tbody id="ticket-tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="content fade-in hidden" id="view-kanban">
+    <div class="kanban-board" id="kanban-board"></div>
+  </div>
+
+  <div class="content fade-in hidden" id="view-recette">
+    <div id="recette-content"></div>
+  </div>
+
+  <div class="content fade-in hidden" id="view-stats">
+    <div id="stats-content"></div>
+  </div>
+
+  <div class="content fade-in hidden" id="view-timing">
+    <div id="timing-content"></div>
+  </div>
+
+  <!-- ─── ADMIN VIEWS ─── -->
+  <div class="content fade-in hidden" id="view-adm-users">
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:18px">
+      <div class="card"><div class="stat-label">Utilisateurs</div><div class="stat-value">5</div><div class="stat-sub">3 actifs aujourd'hui</div></div>
+      <div class="card"><div class="stat-label">Rôles définis</div><div class="stat-value">5</div><div class="stat-sub">1 rôle admin</div></div>
+      <div class="card"><div class="stat-label">Sessions actives</div><div class="stat-value" style="color:var(--green)">3</div><div class="stat-sub">Dernière: il y a 2 min</div></div>
+      <div class="card"><div class="stat-label">En attente</div><div class="stat-value" style="color:var(--amber)">1</div><div class="stat-sub">Invitation envoyée</div></div>
+    </div>
+    <div class="section-head">
+      <div class="section-title">Membres de l'équipe</div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <div class="search-wrap"><span class="search-icon">🔍</span><input type="text" placeholder="Rechercher..." id="adm-user-search" oninput="admFilterUsers()"></div>
+        <select style="background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:5px 9px;border-radius:6px;font-size:11px;font-family:var(--font);outline:none" onchange="admFilterUsers()" id="adm-role-filter">
+          <option value="">Tous les rôles</option>
+          <option value="Administrateur">Administrateur</option>
+          <option value="Chef de projet">Chef de projet</option>
+          <option value="Développeur">Développeur</option>
+          <option value="Expert métier">Expert métier</option>
+          <option value="Lecteur">Lecteur</option>
+        </select>
+        <button class="btn btn-primary btn-sm" onclick="openAddUser()">+ Ajouter</button>
+      </div>
+    </div>
+    <table class="data-table">
+      <thead><tr>
+        <th style="width:32px"></th><th>Utilisateur</th><th>Rôle</th><th>Statut</th>
+        <th>Dernière connexion</th><th>Tickets</th><th style="width:110px">Actions</th>
+      </tr></thead>
+      <tbody id="adm-user-tbody"></tbody>
+    </table>
+  </div>
+
+  <div class="content fade-in hidden" id="view-adm-roles">
+    <div class="section-head">
+      <div class="section-title">Rôles disponibles</div>
+      <button class="btn btn-primary btn-sm" onclick="openAddRole()">+ Nouveau rôle</button>
+    </div>
+    <div class="role-grid" id="adm-roles-grid"></div>
+    <div id="adm-role-detail"></div>
+  </div>
+
+  <div class="content fade-in hidden" id="view-adm-matrix">
+    <div class="section-head">
+      <div class="section-title">Matrice des permissions par rôle</div>
+      <span class="badge badge-source">Lecture seule</span>
+    </div>
+    <div class="card" style="overflow-x:auto"><table id="adm-perm-matrix" style="width:100%;border-collapse:collapse;min-width:580px"></table></div>
+    <div style="margin-top:12px;display:flex;gap:14px;font-size:10px;color:var(--text3)">
+      <span><span class="perm-on" style="display:inline-flex;vertical-align:middle;margin-right:4px"><span class="p-check">✓</span></span>Autorisé</span>
+      <span><span class="perm-off" style="display:inline-flex;vertical-align:middle;margin-right:4px"><span class="p-dash">—</span></span>Refusé</span>
+    </div>
+  </div>
+
+  <div class="content fade-in hidden" id="view-adm-audit">
+    <div class="section-head">
+      <div class="section-title">Journal d'audit — actions administratives</div>
+      <div style="display:flex;gap:8px">
+        <select style="background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:5px 9px;border-radius:6px;font-size:11px;font-family:var(--font);outline:none" id="audit-filter-sel" onchange="renderAuditLog()">
+          <option value="">Toutes les actions</option><option value="add">Ajout</option>
+          <option value="edit">Modification</option><option value="del">Suppression</option><option value="lock">Verrouillage</option>
+        </select>
+        <button class="btn btn-ghost btn-sm" onclick="alert('Export CSV disponible en version back-end connectée')">⬇ Exporter</button>
+      </div>
+    </div>
+    <div class="card" id="adm-audit-log"></div>
+  </div>
+
+  <div class="content fade-in hidden" id="view-adm-sessions">
+    <div class="section-head">
+      <div class="section-title">Sessions utilisateurs actives</div>
+      <button class="btn btn-danger btn-sm" onclick="revokeAllSessions()">⊘ Révoquer toutes</button>
+    </div>
+    <div id="adm-sessions-list"></div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════════════ TICKET DETAIL MODAL ══════════════════ -->
+<div class="modal-overlay hidden" id="ticket-modal" onclick="if(event.target===this)closeTicketModal()">
+  <div class="modal fade-in">
+    <div class="modal-header">
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:7px">
+          <span class="modal-id" id="modal-id"></span>
+          <span id="modal-status-badge"></span><span id="modal-crit-badge"></span>
+        </div>
+        <input class="modal-title-input" id="modal-title" placeholder="Titre...">
+      </div>
+      <button class="close-btn" onclick="closeTicketModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-left">
+        <div class="modal-section">
+          <div class="modal-section-title">Description</div>
+          <div class="modal-desc" id="modal-desc"></div>
+        </div>
+        <div class="modal-section">
+          <div class="modal-section-title">Historique & Commentaires</div>
+          <div id="modal-history"></div>
+          <div style="margin-top:14px">
+            <textarea class="comment-input" id="comment-input" placeholder="Ajouter un commentaire..."></textarea>
+            <div style="display:flex;justify-content:flex-end;margin-top:7px">
+              <button class="btn btn-primary btn-sm" onclick="addComment()">Commenter</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-right">
+        <div class="modal-section-title">Détails</div>
+        <div class="meta-row"><span class="meta-key">Statut</span><span class="meta-val">
+          <select id="meta-status" onchange="updateTicketField('status',this.value)" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:3px 7px;border-radius:4px;font-size:11px;font-family:var(--font)">
+            <option value="open">Ouvert</option><option value="in_progress">En cours</option><option value="resolved">Résolu</option><option value="closed">Fermé</option>
+          </select></span></div>
+        <div class="meta-row"><span class="meta-key">Criticité</span><span class="meta-val">
+          <select id="meta-crit" onchange="updateTicketField('criticality',this.value)" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:3px 7px;border-radius:4px;font-size:11px;font-family:var(--font)">
+            <option value="critical">Critique</option><option value="high">Haute</option><option value="medium">Moyenne</option><option value="low">Faible</option>
+          </select></span></div>
+        <div class="meta-row"><span class="meta-key">Source</span><span class="meta-val">
+          <select id="meta-source" onchange="updateTicketField('source',this.value)" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:3px 7px;border-radius:4px;font-size:11px;font-family:var(--font)">
+            <option value="ERP">ERP</option><option value="EDI">EDI</option><option value="Esker">Esker</option><option value="Données">Données</option>
+          </select></span></div>
+        <div class="meta-row"><span class="meta-key">Assigné à</span><span class="meta-val">
+          <select id="meta-assignee" onchange="updateTicketField('assignee',this.value)" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:3px 7px;border-radius:4px;font-size:11px;font-family:var(--font)"></select></span></div>
+        <div class="meta-row"><span class="meta-key">Périmètre</span><span class="meta-val">
+          <select id="meta-perimeter" onchange="updateTicketField('perimeter',this.value)" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:3px 7px;border-radius:4px;font-size:11px;font-family:var(--font)">
+            <option value="Immo / Sage">Immo / Sage</option>
+            <option value="FG / Sage">FG / Sage</option>
+            <option value="Marchandise / Sage">Marchandise / Sage</option>
+            <option value="Marchandise SAP">Marchandise SAP</option>
+          </select></span></div>
+        <div class="meta-row"><span class="meta-key">Type</span><span class="meta-val">
+          <select id="meta-type" onchange="updateTicketField('type',this.value)" style="background:var(--surface2);border:1px solid var(--border2);color:var(--text);padding:3px 7px;border-radius:4px;font-size:11px;font-family:var(--font)">
+            <option value="anomalie">🐛 Anomalie</option><option value="evolution">✨ Évolution</option>
+          </select></span></div>
+        <div class="meta-row"><span class="meta-key">Créé le</span><span class="meta-val" id="meta-created"></span></div>
+        <div class="meta-row"><span class="meta-key">Échéance</span><span class="meta-val" id="meta-deadline"></span></div>
+        <div class="meta-row"><span class="meta-key">Résolu le</span><span class="meta-val" id="meta-resolved"></span></div>
+        <div class="meta-row"><span class="meta-key">Délai résolution</span><span class="meta-val" id="meta-restime"></span></div>
+        <div style="margin-top:14px">
+          <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center" onclick="analyzeWithAI()">🤖 Analyser avec IA ↗</button>
+        </div>
+      </div>
+    </div>
+    <div style="padding:10px 22px;border-top:1px solid var(--border);display:flex;gap:7px;justify-content:flex-end">
+      <button class="btn btn-ghost btn-sm" onclick="closeTicketModal()">Fermer</button>
+      <button class="btn btn-primary btn-sm" onclick="saveTicket()">💾 Sauvegarder</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ NEW TICKET MODAL ══════════════════ -->
+<div class="modal-overlay hidden" id="new-ticket-modal" onclick="if(event.target===this)closeModal('new-ticket-modal')">
+  <div class="modal fade-in" style="max-width:540px">
+    <div class="modal-header" style="padding:17px 20px 0">
+      <div style="font-size:15px;font-weight:700">Nouveau ticket</div>
+      <button class="close-btn" onclick="closeModal('new-ticket-modal')">✕</button>
+    </div>
+    <div style="padding:16px 20px">
+      <div class="form-group"><label class="form-label">Titre *</label><input type="text" class="form-input" id="new-title" placeholder="Décrivez l'anomalie..."></div>
+      <div class="form-group"><label class="form-label">Description</label><textarea class="form-input" id="new-desc" placeholder="Détails, impact..."></textarea></div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Criticité *</label>
+          <select class="form-input" id="new-crit"><option value="critical">🔴 Critique</option><option value="high">🟠 Haute</option><option value="medium" selected>🟡 Moyenne</option><option value="low">🟢 Faible</option></select></div>
+        <div class="form-group"><label class="form-label">Type *</label>
+          <select class="form-input" id="new-type"><option value="anomalie">🐛 Anomalie</option><option value="evolution">✨ Évolution</option></select></div>
+        <div class="form-group"><label class="form-label">Source d'erreur *</label>
+          <select class="form-input" id="new-source"><option value="ERP">ERP / SAP</option><option value="EDI">EDI</option><option value="Esker">Esker</option><option value="Données">Données référentiel</option></select></div>
+        <div class="form-group"><label class="form-label">Assigné à</label><select class="form-input" id="new-assignee"></select></div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group"><label class="form-label">Périmètre *</label>
+          <select class="form-input" id="new-perimeter">
+            <option value="Immo / Sage">Immo / Sage</option>
+            <option value="FG / Sage">FG / Sage</option>
+            <option value="Marchandise / Sage">Marchandise / Sage</option>
+            <option value="Marchandise SAP">Marchandise SAP</option>
+          </select></div>
+        <div class="form-group"><label class="form-label">Échéance</label><input type="date" class="form-input" id="new-deadline"></div>
+      </div>
+    </div>
+    <div style="padding:10px 20px;border-top:1px solid var(--border);display:flex;gap:7px;justify-content:flex-end">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal('new-ticket-modal')">Annuler</button>
+      <button class="btn btn-primary btn-sm" onclick="createTicket()">✓ Créer le ticket</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════ ADMIN: USER MODAL ══════════════════ -->
+<div class="adm-modal-bg hidden" id="adm-user-modal" onclick="if(event.target===this)closeModal('adm-user-modal')">
+  <div class="adm-modal fade-in">
+    <div class="adm-modal-head"><div class="adm-modal-title" id="adm-user-modal-title">Ajouter un utilisateur</div><button class="close-x" onclick="closeModal('adm-user-modal')">✕</button></div>
+    <div class="adm-modal-body">
+      <div class="form-row"><label class="form-label">Prénom & Nom *</label><input type="text" class="form-input" id="u-name" placeholder="ex: Sophie Martin"></div>
+      <div class="form-grid">
+        <div class="form-row"><label class="form-label">Email *</label><input type="email" class="form-input" id="u-email" placeholder="s.martin@entreprise.fr"></div>
+        <div class="form-row"><label class="form-label">Département</label><input type="text" class="form-input" id="u-dept" placeholder="ex: DSI, Comptabilité..."></div>
+      </div>
+      <div class="form-row"><label class="form-label">Rôle *</label>
+        <select class="form-input" id="u-role"><option value="Administrateur">Administrateur</option><option value="Chef de projet" selected>Chef de projet</option><option value="Développeur">Développeur</option><option value="Expert métier">Expert métier</option><option value="Lecteur">Lecteur</option></select></div>
+      <div class="form-row"><label class="form-label">Accès modules</label>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:4px" id="adm-module-checks"></div></div>
+      <div style="background:rgba(255,183,0,.06);border:1px solid rgba(255,183,0,.15);border-radius:6px;padding:9px 11px;font-size:10px;color:var(--amber);margin-top:7px">⚠ Un email d'invitation sera envoyé à l'adresse renseignée.</div>
+    </div>
+    <div class="adm-modal-foot"><button class="btn btn-ghost btn-sm" onclick="closeModal('adm-user-modal')">Annuler</button><button class="btn btn-primary btn-sm" onclick="saveUser()">✓ Enregistrer</button></div>
+  </div>
+</div>
+
+<!-- ══════════════════ ADMIN: ROLE MODAL ══════════════════ -->
+<div class="adm-modal-bg hidden" id="adm-role-modal" onclick="if(event.target===this)closeModal('adm-role-modal')">
+  <div class="adm-modal fade-in">
+    <div class="adm-modal-head"><div class="adm-modal-title" id="adm-role-modal-title">Nouveau rôle</div><button class="close-x" onclick="closeModal('adm-role-modal')">✕</button></div>
+    <div class="adm-modal-body">
+      <div class="form-grid">
+        <div class="form-row"><label class="form-label">Nom du rôle *</label><input type="text" class="form-input" id="r-name" placeholder="ex: Auditeur"></div>
+        <div class="form-row"><label class="form-label">Couleur</label>
+          <select class="form-input" id="r-color"><option value="#ff4757">Rouge — Administrateur</option><option value="#4f8ef7">Bleu — Chef de projet</option><option value="#7c4dff">Violet — Développeur</option><option value="#00c896">Vert — Expert métier</option><option value="#8890b5">Gris — Lecteur</option><option value="#ffb700">Ambre — Personnalisé</option></select></div>
+      </div>
+      <div class="form-row"><label class="form-label">Description</label><input type="text" class="form-input" id="r-desc" placeholder="Décrivez les responsabilités..."></div>
+      <div class="form-row"><label class="form-label">Permissions</label><div id="adm-perm-toggles"></div></div>
+    </div>
+    <div class="adm-modal-foot"><button class="btn btn-ghost btn-sm" onclick="closeModal('adm-role-modal')">Annuler</button><button class="btn btn-primary btn-sm" onclick="saveRole()">✓ Enregistrer</button></div>
+  </div>
+</div>
+
+<!-- ══════════════════ CONFIRM DELETE ══════════════════ -->
+<div class="adm-modal-bg hidden" id="adm-del-modal" onclick="if(event.target===this)closeModal('adm-del-modal')">
+  <div class="adm-modal fade-in" style="max-width:380px">
+    <div class="adm-modal-head"><div class="adm-modal-title" style="color:var(--red)">⚠ Confirmer la suppression</div><button class="close-x" onclick="closeModal('adm-del-modal')">✕</button></div>
+    <div class="adm-modal-body"><p style="font-size:12px;color:var(--text2);line-height:1.65" id="adm-del-msg"></p></div>
+    <div class="adm-modal-foot"><button class="btn btn-ghost btn-sm" onclick="closeModal('adm-del-modal')">Annuler</button><button class="btn btn-danger btn-sm" id="adm-del-confirm">Supprimer</button></div>
+  </div>
+</div>
+
+<script>
+/* ════════════════════════════════════════════
+   DATA
+════════════════════════════════════════════ */
+const TEAM = [
+  {id:'jd',name:'Jean Dupont',role:'Chef de projet',initials:'JD',color:'#4f8ef7'},
+  {id:'ms',name:'Marie Simon',role:'Expert ERP',initials:'MS',color:'#7c4dff'},
+  {id:'pc',name:'Pierre Chen',role:'Dev EDI',initials:'PC',color:'#00c896'},
+  {id:'al',name:'Alice Laurent',role:'Comptabilité',initials:'AL',color:'#ff6b35'},
+  {id:'rb',name:'Romain Blanc',role:'DSI',initials:'RB',color:'#ffb700'},
+];
+const RECETTE_STEPS=[
+  {name:'Paramétrage ERP',desc:'Configuration SAP/ERP pour la FE',progress:85},
+  {name:'Tests EDI',desc:'Validation flux EDI avec partenaires',progress:60},
+  {name:'Connexion Chorus Pro',desc:'Raccordement portail gouvernemental',progress:40},
+  {name:'Formation utilisateurs',desc:'Formation équipes comptables',progress:20},
+  {name:'Recette métier',desc:'Validation processus côté métier',progress:10},
+  {name:'Mise en production',desc:'Go-live et stabilisation',progress:0},
+];
+const ALL_PERMS=[
+  {id:'view_tickets',name:'Voir les tickets',hint:'Lecture de tous les tickets du projet'},
+  {id:'create_tickets',name:'Créer des tickets',hint:'Ouvrir de nouveaux tickets d\'anomalie'},
+  {id:'edit_tickets',name:'Modifier les tickets',hint:'Éditer titre, description, criticité'},
+  {id:'assign_tickets',name:'Assigner des tickets',hint:'Affecter un ticket à un membre'},
+  {id:'close_tickets',name:'Fermer / Résoudre',hint:'Passer un ticket en Résolu ou Fermé'},
+  {id:'view_reports',name:'Voir les rapports',hint:'Accès aux statistiques et KPIs'},
+  {id:'export_data',name:'Exporter les données',hint:'Export CSV/Excel des tickets'},
+  {id:'manage_users',name:'Gérer les utilisateurs',hint:'Inviter, modifier, désactiver des comptes'},
+  {id:'manage_roles',name:'Gérer les rôles',hint:'Créer et modifier les rôles et permissions'},
+  {id:'view_audit',name:'Voir le journal d\'audit',hint:'Consulter les logs d\'administration'},
+];
+const MODULES=['Tableau de bord','Tickets','Recette','Rapports','Administration'];
+const ROLE_COLORS={'Administrateur':'#ff4757','Chef de projet':'#4f8ef7','Développeur':'#7c4dff','Expert métier':'#00c896','Lecteur':'#8890b5'};
+const BADGE_CLASS={'Administrateur':'b-admin','Chef de projet':'b-pm','Développeur':'b-dev','Expert métier':'b-metier','Lecteur':'b-viewer'};
+
+let tickets=[
+  {id:'FE-001',title:'Mappage TVA incorrect dans SIRET émetteur',desc:'Le code TVA 20% est mal mappé vers le format Factur-X, générant des rejets Chorus Pro sur toutes les factures B2G.',criticality:'critical',type:'anomalie',source:'ERP',perimeter:'Marchandise SAP',status:'in_progress',assignee:'ms',created:'2025-11-02',deadline:'2025-11-10',resolved:null,history:[
+    {user:'jd',action:'a créé le ticket',time:'2025-11-02 09:14',comment:null},
+    {user:'ms',action:'a pris en charge',time:'2025-11-02 10:30',comment:'Je regarde le paramétrage TVA dans la table de mappage SAP.'},
+  ]},
+  {id:'FE-002',title:'Rejet Chorus Pro — Format UBL 2.1 non conforme',desc:'Les factures générées ne passent pas la validation XSD Chorus Pro. Attributs manquants dans le bloc PaymentMeans.',criticality:'critical',type:'anomalie',source:'EDI',perimeter:'FG / Sage',status:'open',assignee:'pc',created:'2025-11-03',deadline:'2025-11-08',resolved:null,history:[
+    {user:'jd',action:'a créé le ticket',time:'2025-11-03 11:00',comment:null},
+    {user:'pc',action:'a commenté',time:'2025-11-03 15:45',comment:'Erreur confirmée sur cac:PaymentMeans/cbc:PaymentMeansCode. Je prépare le correctif.'},
+  ]},
+  {id:'FE-003',title:'Numéro SIRET fournisseur absent dans le flux',desc:"Plusieurs fournisseurs ont un SIRET manquant dans le référentiel. Les factures sont bloquées à l'émission.",criticality:'high',type:'anomalie',source:'Données',perimeter:'Marchandise / Sage',status:'open',assignee:'al',created:'2025-11-01',deadline:'2025-11-12',resolved:null,history:[{user:'al',action:'a créé le ticket',time:'2025-11-01 16:00',comment:null}]},
+  {id:'FE-004',title:'Connexion API Chorus Pro — timeout récurrent',desc:'Le service de dépôt Chorus Pro retourne des timeouts après 30 secondes.',criticality:'high',type:'anomalie',source:'EDI',perimeter:'Immo / Sage',status:'in_progress',assignee:'pc',created:'2025-10-28',deadline:'2025-11-05',resolved:null,history:[
+    {user:'rb',action:'a créé le ticket',time:'2025-10-28 08:30',comment:null},
+    {user:'pc',action:'a commenté',time:'2025-10-29 11:20',comment:"Ouverture ticket auprès de AIFE/DGFiP pour vérifier les quotas API."},
+  ]},
+  {id:'FE-005',title:'Mention légale "Autoliquidation" non générée',desc:'Les factures avec TVA autoliquidée ne portent pas la mention obligatoire.',criticality:'medium',type:'anomalie',source:'ERP',perimeter:'FG / Sage',status:'resolved',assignee:'ms',created:'2025-10-25',deadline:'2025-11-01',resolved:'2025-11-01',history:[
+    {user:'jd',action:'a créé le ticket',time:'2025-10-25 14:00',comment:null},
+    {user:'ms',action:'a résolu le ticket',time:'2025-11-01 17:30',comment:'Paramètre ZSAUTOLIQ ajouté dans la table T007A SAP. Testé OK.'},
+  ]},
+  {id:'FE-006',title:'Ajout export PDF norme Factur-X dans Esker',desc:"Besoin d'un export automatique au format Factur-X depuis Esker pour les factures B2B.",criticality:'medium',type:'evolution',source:'Esker',perimeter:'FG / Sage',status:'open',assignee:'jd',created:'2025-11-04',deadline:'2025-11-20',resolved:null,history:[{user:'jd',action:'a créé le ticket',time:'2025-11-04 10:00',comment:null}]},
+  {id:'FE-007',title:'Facture PDF/A-3 non générée pour archive légale',desc:"Le format d'archivage PDF/A-3 requis pour la piste d'audit n'est pas implémenté.",criticality:'medium',type:'anomalie',source:'ERP',perimeter:'Immo / Sage',status:'open',assignee:'ms',created:'2025-11-01',deadline:'2025-11-15',resolved:null,history:[{user:'rb',action:'a créé le ticket',time:'2025-11-01 09:00',comment:null}]},
+  {id:'FE-008',title:'Doublon détecté — numéro facture non unique',desc:'Deux factures ont reçu le même numéro lors des tests de charge.',criticality:'high',type:'anomalie',source:'ERP',perimeter:'Marchandise SAP',status:'resolved',assignee:'ms',created:'2025-10-20',deadline:'2025-10-28',resolved:'2025-10-27',history:[
+    {user:'pc',action:'a créé le ticket',time:'2025-10-20 15:00',comment:null},
+    {user:'ms',action:'a résolu le ticket',time:'2025-10-27 16:45',comment:"Séquence NAST corrigée. Ajout d'un verrou sur la table VBFS."},
+  ]},
+  {id:'FE-009',title:'Champ BIC/IBAN manquant — coordonnées bancaires',desc:'Les coordonnées bancaires ne remontent pas dans le bloc PaymentMeans des factures Factur-X.',criticality:'low',type:'anomalie',source:'Données',perimeter:'Marchandise / Sage',status:'open',assignee:'al',created:'2025-11-04',deadline:'2025-11-25',resolved:null,history:[{user:'al',action:'a créé le ticket',time:'2025-11-04 14:00',comment:null}]},
+  {id:'FE-010',title:'Interface suivi statut factures en temps réel',desc:"Besoin d'un tableau de bord temps réel pour suivre le statut des factures émises via Chorus Pro.",criticality:'low',type:'evolution',source:'EDI',perimeter:'Immo / Sage',status:'closed',assignee:'jd',created:'2025-10-15',deadline:'2025-10-22',resolved:'2025-10-22',history:[
+    {user:'jd',action:'a créé le ticket',time:'2025-10-15 09:00',comment:null},
+    {user:'jd',action:'a clôturé le ticket',time:'2025-10-22 18:00',comment:'Spécifications validées par le métier, développement planifié S48.'},
+  ]},
+];
+
+let admUsers=[
+  {id:'u1',name:'Jean Dupont',email:'j.dupont@entreprise.fr',dept:'Direction projet',role:'Chef de projet',status:'active',last:'Il y a 2 min',tickets:4,modules:MODULES,initials:'JD',color:'#4f8ef7'},
+  {id:'u2',name:'Marie Simon',email:'m.simon@entreprise.fr',dept:'DSI',role:'Développeur',status:'active',last:'Il y a 1h',tickets:3,modules:['Tableau de bord','Tickets','Recette'],initials:'MS',color:'#7c4dff'},
+  {id:'u3',name:'Pierre Chen',email:'p.chen@entreprise.fr',dept:'DSI',role:'Développeur',status:'active',last:"Aujourd'hui 09:45",tickets:2,modules:['Tableau de bord','Tickets','Recette'],initials:'PC',color:'#00c896'},
+  {id:'u4',name:'Alice Laurent',email:'a.laurent@entreprise.fr',dept:'Comptabilité',role:'Expert métier',status:'inactive',last:'Il y a 3 jours',tickets:2,modules:['Tableau de bord','Tickets','Rapports'],initials:'AL',color:'#ff6b35'},
+  {id:'u5',name:'Romain Blanc',email:'r.blanc@entreprise.fr',dept:'DSI',role:'Administrateur',status:'pending',last:'Invitation envoyée',tickets:0,modules:MODULES,initials:'RB',color:'#ff4757'},
+];
+let admRoles=[
+  {id:'r1',name:'Administrateur',color:'#ff4757',desc:'Accès total, gestion des utilisateurs et paramétrage',users:1,perms:ALL_PERMS.map(p=>p.id)},
+  {id:'r2',name:'Chef de projet',color:'#4f8ef7',desc:'Pilotage du projet, suivi des tickets et reporting',users:1,perms:['view_tickets','create_tickets','edit_tickets','assign_tickets','close_tickets','view_reports','export_data','view_audit']},
+  {id:'r3',name:'Développeur',color:'#7c4dff',desc:'Création et résolution des anomalies techniques',users:2,perms:['view_tickets','create_tickets','edit_tickets','close_tickets','view_reports']},
+  {id:'r4',name:'Expert métier',color:'#00c896',desc:'Validation métier, recette et commentaires',users:1,perms:['view_tickets','create_tickets','edit_tickets','view_reports']},
+  {id:'r5',name:'Lecteur',color:'#8890b5',desc:'Consultation uniquement, aucune modification possible',users:0,perms:['view_tickets','view_reports']},
+];
+let auditLog=[
+  {type:'add',icon:'👤',text:'<b>Jean Dupont</b> a créé le compte <b>Pierre Chen</b> (Développeur)',time:"Aujourd'hui 08:12",user:'Jean Dupont'},
+  {type:'edit',icon:'✏️',text:'<b>Jean Dupont</b> a modifié le rôle de <b>Alice Laurent</b> : Lecteur → Expert métier',time:'Hier 17:34',user:'Jean Dupont'},
+  {type:'lock',icon:'🔒',text:'<b>Romain Blanc</b> a été désactivé — trop de tentatives de connexion',time:'Hier 14:20',user:'Système'},
+  {type:'add',icon:'🔑',text:'Nouveau rôle <b>Expert métier</b> créé par <b>Jean Dupont</b>',time:'Il y a 3 jours',user:'Jean Dupont'},
+  {type:'edit',icon:'🛡️',text:'Permissions du rôle <b>Développeur</b> mises à jour',time:'Il y a 4 jours',user:'Jean Dupont'},
+  {type:'del',icon:'🗑️',text:'Compte <b>Thomas Petit</b> supprimé par <b>Jean Dupont</b>',time:'Il y a 5 jours',user:'Jean Dupont'},
+];
+let admSessions=[
+  {uid:'u1',ip:'192.168.1.45',browser:'Chrome 120',os:'Windows 11',started:'Il y a 2 min',location:'Paris, FR',current:true},
+  {uid:'u2',ip:'10.0.0.12',browser:'Firefox 121',os:'macOS 14',started:'Il y a 1h',location:'Lyon, FR',current:false},
+  {uid:'u3',ip:'172.16.0.8',browser:'Edge 120',os:'Windows 10',started:'Il y a 3h',location:'Paris, FR',current:false},
+];
+
+let filteredTickets=[...tickets];
+let currentTicketId=null;
+let editingUserId=null;
+let selectedRoleId=null;
+
+/* ════════════════════════════════════════════
+   HELPERS
+════════════════════════════════════════════ */
+const tm=id=>TEAM.find(t=>t.id===id)||{name:id,initials:'?',color:'#888'};
+const fmtDate=d=>{if(!d)return'—';return new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'})};
+const daysDiff=(a,b)=>Math.round((new Date(b)-new Date(a))/86400000);
+const resTime=t=>(!t.resolved||!t.created)?'—':daysDiff(t.created,t.resolved)+' jour'+(daysDiff(t.created,t.resolved)>1?'s':'');
+
+function criticBadge(c){
+  const L={critical:'Critique',high:'Haute',medium:'Moyenne',low:'Faible'};
+  const I={critical:'🔴',high:'🟠',medium:'🟡',low:'🟢'};
+  return`<span class="badge badge-${c}">${I[c]} ${L[c]}</span>`;
+}
+function statusBadge(s){
+  const L={open:'Ouvert',in_progress:'En cours',resolved:'Résolu',closed:'Fermé'};
+  return`<span class="badge badge-${s.replace('_','-')}">${L[s]}</span>`;
+}
+function avHtml(id,size=24){
+  const m=tm(id);
+  return`<div class="av" style="background:${m.color}20;color:${m.color};width:${size}px;height:${size}px;font-size:${Math.round(size*.38)}px">${m.initials}</div>`;
+}
+function deadlineHtml(t){
+  if(!t.deadline)return'<span class="deadline ok">—</span>';
+  const diff=Math.round((new Date(t.deadline)-new Date())/86400000);
+  if(t.status==='resolved'||t.status==='closed')return`<span class="deadline ok">${fmtDate(t.deadline)}</span>`;
+  if(diff<0)return`<span class="deadline overdue">⚠ ${fmtDate(t.deadline)} (${-diff}j dépassé)</span>`;
+  if(diff<=2)return`<span class="deadline soon">⏳ ${fmtDate(t.deadline)} (${diff}j)</span>`;
+  return`<span class="deadline ok">${fmtDate(t.deadline)}</span>`;
+}
+function slaHtml(t){
+  if(!t.deadline||!t.created)return'<div style="font-size:10px;color:var(--text3)">—</div>';
+  const total=daysDiff(t.created,t.deadline);
+  const elapsed=daysDiff(t.created,new Date().toISOString().split('T')[0]);
+  const pct=Math.min(100,Math.max(0,Math.round(elapsed/total*100)));
+  const col=pct>85?'#ff4757':pct>60?'#ffb700':'#00c896';
+  return`<div class="progress-ring">${pct}%<div style="flex:1;height:3px;background:var(--surface3);border-radius:2px;overflow:hidden"><div style="height:3px;width:${pct}%;background:${col};border-radius:2px"></div></div></div>`;
+}
+function closeModal(id){document.getElementById(id).classList.add('hidden')}
+function addAudit(type,icon,text){auditLog.unshift({type,icon,text,time:"À l'instant",user:'Jean Dupont'})}
+
+/* ════════════════════════════════════════════
+   NAVIGATION
+════════════════════════════════════════════ */
+const TICKET_VIEWS=['board','kanban','recette','stats','timing'];
+const ADMIN_VIEWS=['adm-users','adm-roles','adm-matrix','adm-audit','adm-sessions'];
+const ALL_VIEWS=[...TICKET_VIEWS,...ADMIN_VIEWS];
+
+function showView(v,navEl){
+  ALL_VIEWS.forEach(x=>document.getElementById('view-'+x).classList.add('hidden'));
+  document.getElementById('view-'+v).classList.remove('hidden');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active','admin-active'));
+  if(navEl) navEl.classList.add('active');
+  document.getElementById('admin-banner').classList.add('hidden');
+  document.getElementById('header-actions').style.display='';
+  const TITLES={board:'Tableau de bord',kanban:'Vue Kanban',recette:'Plan de recette',stats:'Statistiques & Rapports',timing:'Timing de résolution'};
+  document.getElementById('view-title').textContent=TITLES[v]||v;
+  document.getElementById('view-bc').textContent='Facturation Électronique › '+(TITLES[v]||v);
+  if(v==='kanban')renderKanban();
+  if(v==='recette')renderRecette();
+  if(v==='stats')renderStatsView();
+  if(v==='timing')renderTiming();
+}
+
+function showAdminView(v,navEl){
+  ALL_VIEWS.forEach(x=>document.getElementById('view-'+x).classList.add('hidden'));
+  document.getElementById('view-'+v).classList.remove('hidden');
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active','admin-active'));
+  if(navEl) navEl.classList.add('admin-active');
+  document.getElementById('admin-banner').classList.remove('hidden');
+  document.getElementById('header-actions').style.display='none';
+  const TITLES={'adm-users':'Gestion des utilisateurs','adm-roles':'Rôles & Permissions','adm-matrix':'Matrice des accès','adm-audit':"Journal d'audit",'adm-sessions':'Sessions actives'};
+  document.getElementById('view-title').textContent=TITLES[v]||v;
+  document.getElementById('view-bc').textContent='Administration · FacturaTrack › '+(TITLES[v]||v);
+  if(v==='adm-users')renderAdmUsers();
+  if(v==='adm-roles')renderAdmRoles();
+  if(v==='adm-matrix')renderAdmMatrix();
+  if(v==='adm-audit')renderAuditLog();
+  if(v==='adm-sessions')renderSessions();
+}
+
+/* ════════════════════════════════════════════
+   TICKETS — BOARD
+════════════════════════════════════════════ */
+function updateStats(){
+  const total=tickets.length,open=tickets.filter(t=>t.status==='open').length;
+  const inProg=tickets.filter(t=>t.status==='in_progress').length;
+  const crit=tickets.filter(t=>t.criticality==='critical'&&t.status!=='closed'&&t.status!=='resolved').length;
+  const res=tickets.filter(t=>t.status==='resolved'||t.status==='closed').length;
+  document.getElementById('stats-bar').innerHTML=`
+    <div class="stat-card"><div class="stat-label">Total tickets</div><div class="stat-value">${total}</div><div class="stat-sub"><span class="stat-dot" style="background:#4f8ef7"></span>${open} ouverts</div></div>
+    <div class="stat-card"><div class="stat-label">En cours</div><div class="stat-value" style="color:#7c4dff">${inProg}</div><div class="stat-sub">En traitement</div></div>
+    <div class="stat-card"><div class="stat-label">Critiques</div><div class="stat-value" style="color:#ff4757">${crit}</div><div class="stat-sub">Action immédiate</div></div>
+    <div class="stat-card"><div class="stat-label">Résolus</div><div class="stat-value" style="color:#00c896">${res}</div><div class="stat-sub">${Math.round(res/total*100)}% du total</div></div>
+  `;
+  document.getElementById('recette-badge').textContent=tickets.filter(t=>t.status==='open'||t.status==='in_progress').length;
+}
+const PERIMETER_COLORS={'Immo / Sage':'#4f8ef7','FG / Sage':'#00c896','Marchandise / Sage':'#ffb700','Marchandise SAP':'#7c4dff'};
+function perimeterBadge(p){
+  const col=PERIMETER_COLORS[p]||'#8890b5';
+  return`<span class="badge" style="background:${col}18;color:${col};border:1px solid ${col}30;white-space:nowrap">${p||'—'}</span>`;
+}
+function typeBadge(t){
+  if(t==='evolution')return`<span class="badge" style="background:rgba(0,212,180,.12);color:#00d4b4;border:1px solid rgba(0,212,180,.25)">✨ Évol.</span>`;
+  return`<span class="badge" style="background:rgba(255,71,87,.09);color:#ff7b87;border:1px solid rgba(255,71,87,.2)">🐛 Anomalie</span>`;
+}
+function renderTable(){
+  const tbody=document.getElementById('ticket-tbody');
+  if(!filteredTickets.length){tbody.innerHTML='<tr><td colspan="10"><div class="empty-state" style="padding:40px;text-align:center;color:var(--text3)">🎉 Aucun ticket trouvé</div></td></tr>';return}
+  tbody.innerHTML=filteredTickets.map(t=>`
+    <tr class="ticket-row" onclick="openTicket('${t.id}')">
+      <td><span class="ticket-id">${t.id}</span></td>
+      <td><div class="ticket-title">${t.title}</div><div class="ticket-title-sub">${t.source} · ${t.perimeter||'—'}</div></td>
+      <td>${typeBadge(t.type)}</td>
+      <td>${criticBadge(t.criticality)}</td>
+      <td><span class="badge badge-source">${t.source}</span></td>
+      <td>${perimeterBadge(t.perimeter)}</td>
+      <td>${statusBadge(t.status)}</td>
+      <td><div style="display:flex;align-items:center;gap:5px">${avHtml(t.assignee)}<span style="font-size:11px;color:var(--text2)">${tm(t.assignee).name.split(' ')[0]}</span></div></td>
+      <td>${deadlineHtml(t)}</td>
+      <td>${slaHtml(t)}</td>
+    </tr>`).join('');
+}
+function applyFilters(){
+  const q=(document.getElementById('search-input').value||'').toLowerCase();
+  const cr=document.getElementById('filter-crit').value;
+  const so=document.getElementById('filter-source').value;
+  const pe=document.getElementById('filter-perimeter').value;
+  const ty=document.getElementById('filter-type')?.value||'';
+  const st=document.getElementById('filter-status').value;
+  const as=document.getElementById('filter-assignee').value;
+  filteredTickets=tickets.filter(t=>{
+    if(q&&!t.title.toLowerCase().includes(q)&&!t.id.toLowerCase().includes(q))return false;
+    if(cr&&t.criticality!==cr)return false;
+    if(so&&t.source!==so)return false;
+    if(pe&&t.perimeter!==pe)return false;
+    if(ty&&t.type!==ty)return false;
+    if(st&&t.status!==st)return false;
+    if(as&&t.assignee!==as)return false;
+    return true;
+  });
+  renderTable();
+}
+function filterByStatus(s){document.getElementById('filter-status').value=s;applyFilters()}
+function filterByCriticality(c){document.getElementById('filter-crit').value=c;applyFilters()}
+function filterByAssigned(){document.getElementById('filter-assignee').value='jd';applyFilters()}
+
+function renderKanban(){
+  const cols=[{status:'open',label:'Ouvert',color:'#4f8ef7'},{status:'in_progress',label:'En cours',color:'#7c4dff'},{status:'resolved',label:'Résolu',color:'#00c896'},{status:'closed',label:'Fermé',color:'#5c6180'}];
+  document.getElementById('kanban-board').innerHTML=cols.map(col=>{
+    const ct=tickets.filter(t=>t.status===col.status);
+    return`<div class="kanban-col">
+      <div class="kanban-col-header" style="border-bottom-color:${col.color}">
+        <span class="kanban-col-title" style="color:${col.color}">${col.label}</span>
+        <span class="kanban-count">${ct.length}</span>
+      </div>
+      ${ct.map(t=>`<div class="kanban-card" onclick="openTicket('${t.id}')">
+        <div class="kanban-card-id">${t.id}</div>
+        <div class="kanban-card-title">${t.title}</div>
+        <div class="kanban-card-footer">${criticBadge(t.criticality)}${avHtml(t.assignee)}</div>
+      </div>`).join('')}
+    </div>`;
+  }).join('');
+}
+
+function renderRecette(){
+  document.getElementById('recette-content').innerHTML=`
+    <div class="section-head"><div class="section-title">Plan de recette — Facturation Électronique</div></div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:13px;margin-bottom:28px">
+      ${RECETTE_STEPS.map(step=>{
+        const st=tickets.filter(t=>t.step===step.name&&t.status!=='closed');
+        const col=step.progress===100?'#00c896':step.progress>50?'#4f8ef7':'#ffb700';
+        return`<div class="card">
+          <div style="display:flex;justify-content:space-between;margin-bottom:8px">
+            <div style="font-size:12px;font-weight:600">${step.name}</div>
+            <div style="font-size:18px;font-weight:700;color:${col}">${step.progress}%</div>
+          </div>
+          <div style="font-size:11px;color:var(--text3);margin-bottom:8px">${step.desc}</div>
+          <div style="background:var(--surface2);height:5px;border-radius:3px;overflow:hidden;margin-bottom:10px"><div style="height:5px;width:${step.progress}%;background:${col};border-radius:3px"></div></div>
+          <div style="display:flex;gap:7px;flex-wrap:wrap">
+            ${st.filter(t=>t.status==='open').length?`<span class="badge badge-open">${st.filter(t=>t.status==='open').length} ouvert(s)</span>`:''}
+            ${st.filter(t=>t.criticality==='critical').length?`<span class="badge badge-critical">${st.filter(t=>t.criticality==='critical').length} critique(s)</span>`:''}
+            ${st.length===0?'<span style="font-size:10px;color:var(--text3)">Aucun ticket actif ✓</span>':''}
+          </div>
+        </div>`;
+      }).join('')}
+    </div>
+    ${RECETTE_STEPS.map(step=>{
+      const st=tickets.filter(t=>t.step===step.name);
+      if(!st.length)return'';
+      return`<div style="margin-bottom:18px">
+        <div style="font-size:11px;font-weight:600;color:var(--text2);padding:4px 0;border-bottom:1px solid var(--border);margin-bottom:7px">${step.name}</div>
+        ${st.map(t=>`<div style="display:flex;align-items:center;gap:9px;padding:7px 0;border-bottom:1px solid var(--border);cursor:pointer" onclick="openTicket('${t.id}')">
+          <span style="font-family:monospace;font-size:10px;color:var(--text3);width:56px">${t.id}</span>
+          ${criticBadge(t.criticality)}<span style="flex:1;font-size:12px">${t.title}</span>
+          ${statusBadge(t.status)}${avHtml(t.assignee)}
+        </div>`).join('')}
+      </div>`;
+    }).join('')}
+  `;
+}
+
+function renderStatsView(){
+  const byCrit=['critical','high','medium','low'].map(c=>({label:c,count:tickets.filter(t=>t.criticality===c).length}));
+  const bySource=[...new Set(tickets.map(t=>t.source))].map(s=>({label:s,count:tickets.filter(t=>t.source===s).length}));
+  const avgRes=tickets.filter(t=>t.resolved).map(t=>daysDiff(t.created,t.resolved));
+  const avg=avgRes.length?Math.round(avgRes.reduce((a,b)=>a+b,0)/avgRes.length):'—';
+  const critColors={critical:'#ff4757',high:'#ff6b35',medium:'#ffb700',low:'#00c896'};
+  const mxC=Math.max(...byCrit.map(c=>c.count));
+  const mxS=Math.max(...bySource.map(s=>s.count));
+  document.getElementById('stats-content').innerHTML=`
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:22px">
+      <div class="stat-card"><div class="stat-label">Délai résolution moyen</div><div class="stat-value" style="font-size:22px">${avg} <span style="font-size:13px;color:var(--text3)">jours</span></div></div>
+      <div class="stat-card"><div class="stat-label">Taux résolution</div><div class="stat-value" style="font-size:22px;color:#00c896">${Math.round(tickets.filter(t=>t.status==='resolved'||t.status==='closed').length/tickets.length*100)}%</div></div>
+      <div class="stat-card"><div class="stat-label">En retard</div><div class="stat-value" style="font-size:22px;color:#ff4757">${tickets.filter(t=>t.deadline&&new Date(t.deadline)<new Date()&&t.status!=='resolved'&&t.status!=='closed').length}</div></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+      <div class="card"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px">Répartition par criticité</div>
+        ${byCrit.map(c=>`<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span>${criticBadge(c.label)}</span><span style="color:var(--text3)">${c.count}</span></div><div style="height:5px;background:var(--surface2);border-radius:3px;overflow:hidden"><div style="height:5px;width:${mxC?Math.round(c.count/mxC*100):0}%;background:${critColors[c.label]};border-radius:3px"></div></div></div>`).join('')}
+      </div>
+      <div class="card"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px">Répartition par source</div>
+        ${bySource.map(s=>`<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px"><span style="color:var(--text)">${s.label}</span><span style="color:var(--text3)">${s.count}</span></div><div style="height:5px;background:var(--surface2);border-radius:3px;overflow:hidden"><div style="height:5px;width:${Math.round(s.count/mxS*100)}%;background:#4f8ef7;border-radius:3px"></div></div></div>`).join('')}
+      </div>
+      <div class="card"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px">Charge par personne</div>
+        ${TEAM.map(m=>{const c=tickets.filter(t=>t.assignee===m.id).length;return c?`<div style="display:flex;align-items:center;gap:9px;margin-bottom:9px">${avHtml(m.id,26)}<div style="flex:1"><div style="font-size:11px;font-weight:500">${m.name}</div><div style="height:4px;background:var(--surface2);border-radius:2px;margin-top:2px;overflow:hidden"><div style="height:4px;width:${Math.round(c/tickets.length*100)}%;background:${m.color};border-radius:2px"></div></div></div><span style="font-size:11px;color:var(--text3)">${c}</span></div>`:'';}).join('')}
+      </div>
+      <div class="card"><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:12px">Progression recette</div>
+        ${RECETTE_STEPS.map(s=>`<div style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:2px"><span style="color:var(--text2)">${s.name}</span><span style="color:var(--text3)">${s.progress}%</span></div><div style="height:4px;background:var(--surface2);border-radius:2px;overflow:hidden"><div style="height:4px;width:${s.progress}%;background:${s.progress===100?'#00c896':s.progress>50?'#4f8ef7':'#ffb700'};border-radius:2px"></div></div></div>`).join('')}
+      </div>
+    </div>
+  `;
+}
+
+/* ════════════════════════════════════════════
+   TICKET MODAL
+════════════════════════════════════════════ */
+function openTicket(id){
+  currentTicketId=id;
+  const t=tickets.find(x=>x.id===id);if(!t)return;
+  document.getElementById('modal-id').textContent=t.id;
+  document.getElementById('modal-title').value=t.title;
+  document.getElementById('modal-status-badge').innerHTML=statusBadge(t.status);
+  document.getElementById('modal-crit-badge').innerHTML=criticBadge(t.criticality);
+  document.getElementById('modal-desc').textContent=t.desc;
+  document.getElementById('meta-status').value=t.status;
+  document.getElementById('meta-crit').value=t.criticality;
+  document.getElementById('meta-source').value=t.source;
+  if(document.getElementById('meta-perimeter'))document.getElementById('meta-perimeter').value=t.perimeter||'Immo / Sage';
+  if(document.getElementById('meta-type'))document.getElementById('meta-type').value=t.type||'anomalie';
+  document.getElementById('meta-created').textContent=fmtDate(t.created);
+  document.getElementById('meta-deadline').innerHTML=deadlineHtml(t);
+  document.getElementById('meta-resolved').textContent=fmtDate(t.resolved);
+  document.getElementById('meta-restime').textContent=resTime(t);
+  document.getElementById('meta-assignee').innerHTML=TEAM.map(m=>`<option value="${m.id}"${m.id===t.assignee?' selected':''}>${m.name}</option>`).join('');
+  document.getElementById('modal-history').innerHTML=t.history.map(h=>{
+    const m=tm(h.user);
+    return`<div class="history-item"><div class="history-avatar" style="background:${m.color}20;color:${m.color}">${m.initials}</div><div style="flex:1"><div style="display:flex;align-items:center;gap:7px"><span class="history-user">${m.name}</span><span class="history-action">${h.action}</span><span class="history-time">${h.time}</span></div>${h.comment?`<div class="history-comment">${h.comment}</div>`:''}</div></div>`;
+  }).join('');
+  document.getElementById('ticket-modal').classList.remove('hidden');
+}
+function closeTicketModal(){document.getElementById('ticket-modal').classList.add('hidden');currentTicketId=null}
+function updateTicketField(field,value){
+  const t=tickets.find(x=>x.id===currentTicketId);if(!t)return;
+  t[field]=value;
+  if(field==='status'&&(value==='resolved'||value==='closed')&&!t.resolved){t.resolved=new Date().toISOString().split('T')[0];document.getElementById('meta-resolved').textContent=fmtDate(t.resolved);document.getElementById('meta-restime').textContent=resTime(t);}
+  const AL={status:'a changé le statut',criticality:'a changé la criticité',source:'a changé la source',assignee:'a réassigné'};
+  const VL={open:'Ouvert',in_progress:'En cours',resolved:'Résolu',closed:'Fermé',critical:'Critique',high:'Haute',medium:'Moyenne',low:'Faible'};
+  t.history.push({user:'jd',action:`${AL[field]||'a modifié'} → ${VL[value]||value}`,time:new Date().toLocaleString('fr-FR'),comment:null});
+  document.getElementById('modal-status-badge').innerHTML=statusBadge(t.status);
+  document.getElementById('modal-crit-badge').innerHTML=criticBadge(t.criticality);
+  updateStats();applyFilters();
+}
+function addComment(){
+  const input=document.getElementById('comment-input'),text=input.value.trim();if(!text)return;
+  const t=tickets.find(x=>x.id===currentTicketId);if(!t)return;
+  t.history.push({user:'jd',action:'a commenté',time:new Date().toLocaleString('fr-FR'),comment:text});
+  input.value='';openTicket(currentTicketId);
+}
+function saveTicket(){
+  const t=tickets.find(x=>x.id===currentTicketId);if(!t)return;
+  t.title=document.getElementById('modal-title').value;
+  updateStats();applyFilters();closeTicketModal();
+}
+function analyzeWithAI(){
+  const t=tickets.find(x=>x.id===currentTicketId);if(!t)return;
+  sendPrompt(`Analyse ce ticket de facturation électronique et propose des pistes de résolution :\n\nID: ${t.id}\nTitre: ${t.title}\nDescription: ${t.desc}\nCriticité: ${t.criticality}\nSource: ${t.source}\nÉtape recette: ${t.step}`);
+}
+function openNewTicketModal(){
+  document.getElementById('new-assignee').innerHTML=TEAM.map(m=>`<option value="${m.id}">${m.name} — ${m.role}</option>`).join('');
+  const d=new Date();d.setDate(d.getDate()+7);document.getElementById('new-deadline').value=d.toISOString().split('T')[0];
+  document.getElementById('new-ticket-modal').classList.remove('hidden');
+}
+function createTicket(){
+  const title=document.getElementById('new-title').value.trim();if(!title){alert('Titre obligatoire');return}
+  const num=String(tickets.length+1).padStart(3,'0');
+  tickets.unshift({id:`FE-${num}`,title,desc:document.getElementById('new-desc').value||'Aucune description.',criticality:document.getElementById('new-crit').value,type:document.getElementById('new-type').value,source:document.getElementById('new-source').value,perimeter:document.getElementById('new-perimeter').value,status:'open',assignee:document.getElementById('new-assignee').value,created:new Date().toISOString().split('T')[0],deadline:document.getElementById('new-deadline').value,resolved:null,history:[{user:'jd',action:'a créé le ticket',time:new Date().toLocaleString('fr-FR'),comment:null}]});
+  filteredTickets=[...tickets];closeModal('new-ticket-modal');updateStats();renderTable();
+  document.getElementById('new-title').value='';document.getElementById('new-desc').value='';
+}
+
+/* ════════════════════════════════════════════
+   TIMING RÉSOLUTION
+════════════════════════════════════════════ */
+function renderTiming(){
+  const el=document.getElementById('timing-content');if(!el)return;
+  const resolved=tickets.filter(t=>t.resolved&&t.created);
+  const open=tickets.filter(t=>t.status==='open'||t.status==='in_progress');
+  const avgAll=resolved.length?Math.round(resolved.map(t=>daysDiff(t.created,t.resolved)).reduce((a,b)=>a+b,0)/resolved.length):0;
+
+  // SLA cibles par criticité (jours)
+  const SLA_TARGET={critical:3,high:7,medium:14,low:30};
+  const critList=['critical','high','medium','low'];
+  const critLabel={critical:'Critique',high:'Haute',medium:'Moyenne',low:'Faible'};
+  const critColor={critical:'#ff4757',high:'#ff6b35',medium:'#ffb700',low:'#00c896'};
+
+  // Timing moyen par criticité (résolus)
+  const byC=critList.map(c=>{
+    const r=resolved.filter(t=>t.criticality===c);
+    const avg=r.length?Math.round(r.map(t=>daysDiff(t.created,t.resolved)).reduce((a,b)=>a+b,0)/r.length):null;
+    const target=SLA_TARGET[c];
+    const pct=avg!==null?Math.min(100,Math.round(avg/target*100)):null;
+    return{c,label:critLabel[c],color:critColor[c],avg,target,pct,count:r.length};
+  });
+
+  // Timing en cours (jours depuis création)
+  const openAged=open.map(t=>({...t,age:daysDiff(t.created,new Date().toISOString().split('T')[0])})).sort((a,b)=>b.age-a.age);
+
+  // Par périmètre
+  const perims=[...new Set(tickets.map(t=>t.perimeter).filter(Boolean))];
+  const byP=perims.map(p=>{
+    const r=resolved.filter(t=>t.perimeter===p);
+    const avg=r.length?Math.round(r.map(t=>daysDiff(t.created,t.resolved)).reduce((a,b)=>a+b,0)/r.length):null;
+    return{p,avg,count:r.length};
+  }).filter(x=>x.avg!==null).sort((a,b)=>b.avg-a.avg);
+  const maxP=Math.max(...byP.map(x=>x.avg),1);
+
+  // Par type
+  const anomResolved=resolved.filter(t=>t.type==='anomalie');
+  const evolResolved=resolved.filter(t=>t.type==='evolution');
+  const avgAnom=anomResolved.length?Math.round(anomResolved.map(t=>daysDiff(t.created,t.resolved)).reduce((a,b)=>a+b,0)/anomResolved.length):0;
+  const avgEvol=evolResolved.length?Math.round(evolResolved.map(t=>daysDiff(t.created,t.resolved)).reduce((a,b)=>a+b,0)/evolResolved.length):0;
+
+  // Tickets en retard
+  const overdue=open.filter(t=>t.deadline&&new Date(t.deadline)<new Date());
+
+  el.innerHTML=`
+    <div class="section-head"><div class="section-title">Tableau de bord — Timing de résolution</div></div>
+
+    <!-- KPI row -->
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:22px">
+      <div class="stat-card">
+        <div class="stat-label">Délai moyen global</div>
+        <div class="stat-value" style="font-size:26px">${avgAll}<span style="font-size:13px;color:var(--text3);margin-left:4px">j</span></div>
+        <div class="stat-sub">${resolved.length} ticket${resolved.length>1?'s':''} résolus</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Anomalies</div>
+        <div class="stat-value" style="font-size:26px;color:#ff7b87">${avgAnom||'—'}<span style="font-size:13px;color:var(--text3);margin-left:4px">${avgAnom?'j':''}</span></div>
+        <div class="stat-sub">${anomResolved.length} résolues</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Évolutions</div>
+        <div class="stat-value" style="font-size:26px;color:#00d4b4">${avgEvol||'—'}<span style="font-size:13px;color:var(--text3);margin-left:4px">${avgEvol?'j':''}</span></div>
+        <div class="stat-sub">${evolResolved.length} résolues</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">En retard</div>
+        <div class="stat-value" style="font-size:26px;color:${overdue.length>0?'#ff4757':'#00c896'}">${overdue.length}</div>
+        <div class="stat-sub">échéance dépassée</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:18px">
+      <!-- SLA par criticité -->
+      <div class="card">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:14px">Délai résolution vs SLA cible (jours)</div>
+        ${byC.map(x=>{
+          const ok=x.avg!==null&&x.avg<=x.target;
+          return`<div style="margin-bottom:14px">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px">
+              <span class="badge badge-${x.c}">${x.label}</span>
+              <div style="display:flex;align-items:center;gap:10px;font-size:11px">
+                <span style="color:var(--text3)">Cible: ${x.target}j</span>
+                <span style="font-weight:600;color:${x.avg===null?'var(--text3)':ok?'#00c896':'#ff4757'}">${x.avg!==null?x.avg+'j':'—'}</span>
+                ${x.avg!==null?`<span style="font-size:10px;color:${ok?'#00c896':'#ff4757'}">${ok?'✓ OK':'⚠ Dépassé'}</span>`:''}
+              </div>
+            </div>
+            <div style="position:relative;height:8px;background:var(--surface2);border-radius:4px;overflow:visible">
+              ${x.avg!==null?`<div style="height:8px;width:${Math.min(95,Math.round(x.avg/Math.max(x.avg,x.target)*100))}%;background:${ok?'#00c896':'#ff4757'};border-radius:4px;transition:width .5s"></div>`:''}
+              <!-- cible marker -->
+              <div style="position:absolute;top:-3px;left:${Math.min(95,Math.round(x.target/Math.max(x.avg||x.target,x.target)*100))}%;width:2px;height:14px;background:var(--text3);border-radius:1px" title="Cible ${x.target}j"></div>
+            </div>
+            <div style="font-size:10px;color:var(--text3);margin-top:3px">${x.count} ticket${x.count>1?'s':''} résolus</div>
+          </div>`;
+        }).join('')}
+      </div>
+
+      <!-- Délai par périmètre -->
+      <div class="card">
+        <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:14px">Délai moyen par périmètre (jours)</div>
+        ${byP.length?byP.map(x=>{
+          const col=PERIMETER_COLORS[x.p]||'#8890b5';
+          return`<div style="margin-bottom:12px">
+            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
+              <span style="color:var(--text)">${x.p}</span>
+              <span style="font-weight:600;color:${col}">${x.avg}j</span>
+            </div>
+            <div style="height:7px;background:var(--surface2);border-radius:4px;overflow:hidden">
+              <div style="height:7px;width:${Math.round(x.avg/maxP*95)}%;background:${col};border-radius:4px"></div>
+            </div>
+            <div style="font-size:10px;color:var(--text3);margin-top:2px">${x.count} résolu${x.count>1?'s':''}</div>
+          </div>`;
+        }).join(''):'<div style="font-size:11px;color:var(--text3);padding:12px 0">Aucune donnée disponible</div>'}
+      </div>
+    </div>
+
+    <!-- Tickets ouverts les plus anciens -->
+    <div class="card">
+      <div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:14px">Tickets ouverts — classement par ancienneté</div>
+      ${openAged.length?`
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr>
+          <th style="text-align:left;font-size:10px;color:var(--text3);padding:6px 10px;border-bottom:1px solid var(--border)">Ticket</th>
+          <th style="text-align:left;font-size:10px;color:var(--text3);padding:6px 10px;border-bottom:1px solid var(--border)">Type</th>
+          <th style="text-align:left;font-size:10px;color:var(--text3);padding:6px 10px;border-bottom:1px solid var(--border)">Criticité</th>
+          <th style="text-align:left;font-size:10px;color:var(--text3);padding:6px 10px;border-bottom:1px solid var(--border)">Périmètre</th>
+          <th style="text-align:left;font-size:10px;color:var(--text3);padding:6px 10px;border-bottom:1px solid var(--border)">Assigné</th>
+          <th style="text-align:left;font-size:10px;color:var(--text3);padding:6px 10px;border-bottom:1px solid var(--border)">Échéance</th>
+          <th style="text-align:right;font-size:10px;color:var(--text3);padding:6px 10px;border-bottom:1px solid var(--border)">Âge</th>
+          <th style="text-align:left;font-size:10px;color:var(--text3);padding:6px 10px;border-bottom:1px solid var(--border)">Progression SLA</th>
+        </tr></thead>
+        <tbody>
+          ${openAged.map(t=>{
+            const target=SLA_TARGET[t.criticality]||14;
+            const pct=Math.min(100,Math.round(t.age/target*100));
+            const col=pct>=100?'#ff4757':pct>=75?'#ffb700':'#00c896';
+            const overdue=t.deadline&&new Date(t.deadline)<new Date();
+            return`<tr style="border-bottom:1px solid var(--border);cursor:pointer" onclick="openTicket('${t.id}')">
+              <td style="padding:9px 10px">
+                <div style="font-size:11px;font-weight:500">${t.title.length>40?t.title.slice(0,40)+'…':t.title}</div>
+                <div style="font-family:monospace;font-size:10px;color:var(--text3)">${t.id}</div>
+              </td>
+              <td style="padding:9px 10px">${typeBadge(t.type)}</td>
+              <td style="padding:9px 10px">${criticBadge(t.criticality)}</td>
+              <td style="padding:9px 10px">${perimeterBadge(t.perimeter)}</td>
+              <td style="padding:9px 10px">${avHtml(t.assignee,22)}</td>
+              <td style="padding:9px 10px">${deadlineHtml(t)}</td>
+              <td style="padding:9px 10px;text-align:right;font-weight:600;color:${pct>=100?'#ff4757':pct>=75?'#ffb700':'var(--text)'}">${t.age}j</td>
+              <td style="padding:9px 10px;min-width:100px">
+                <div style="display:flex;align-items:center;gap:6px">
+                  <div style="flex:1;height:5px;background:var(--surface2);border-radius:3px;overflow:hidden">
+                    <div style="height:5px;width:${pct}%;background:${col};border-radius:3px"></div>
+                  </div>
+                  <span style="font-size:10px;color:${col};font-weight:600;min-width:28px">${pct}%</span>
+                </div>
+              </td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>`:'<div style="font-size:12px;color:var(--text3);padding:16px 0;text-align:center">🎉 Aucun ticket ouvert en cours</div>'}
+    </div>
+  `;
+}
+
+/* ════════════════════════════════════════════
+   ADMIN — USERS
+════════════════════════════════════════════ */
+let admFilteredUsers=[...admUsers];
+function admFilterUsers(){
+  const q=(document.getElementById('adm-user-search').value||'').toLowerCase();
+  const r=document.getElementById('adm-role-filter').value;
+  admFilteredUsers=admUsers.filter(u=>{
+    if(q&&!u.name.toLowerCase().includes(q)&&!u.email.toLowerCase().includes(q))return false;
+    if(r&&u.role!==r)return false;
+    return true;
+  });
+  renderAdmUsers();
+}
+function renderAdmUsers(){
+  admFilteredUsers=[...admUsers];
+  const q=(document.getElementById('adm-user-search')?.value||'').toLowerCase();
+  const r=document.getElementById('adm-role-filter')?.value||'';
+  admFilteredUsers=admUsers.filter(u=>{
+    if(q&&!u.name.toLowerCase().includes(q)&&!u.email.toLowerCase().includes(q))return false;
+    if(r&&u.role!==r)return false;
+    return true;
+  });
+  const tbody=document.getElementById('adm-user-tbody');if(!tbody)return;
+  tbody.innerHTML=admFilteredUsers.map(u=>{
+    const sc=u.status==='active'?'b-active':u.status==='inactive'?'b-inactive':'b-pending';
+    const sl=u.status==='active'?'#00c896':u.status==='inactive'?'#5c6180':'#ffb700';
+    const slabel=u.status==='active'?'Actif':u.status==='inactive'?'Inactif':'En attente';
+    return`<tr class="drow" onclick="openEditUser('${u.id}')">
+      <td><div class="av av-md" style="background:${u.color}20;color:${u.color}">${u.initials}</div></td>
+      <td><div style="font-size:12px;font-weight:600">${u.name}</div><div style="font-size:10px;color:var(--text3)">${u.email}</div></td>
+      <td><span class="badge ${BADGE_CLASS[u.role]||'b-viewer'}">${u.role}</span></td>
+      <td><span class="badge ${sc}"><span class="sdot" style="background:${sl}"></span>${slabel}</span></td>
+      <td style="font-size:10px;color:var(--text3)">${u.last}</td>
+      <td style="font-size:12px">${u.tickets}</td>
+      <td onclick="event.stopPropagation()" style="display:flex;gap:4px;align-items:center;padding:7px 12px">
+        <button class="btn btn-ghost btn-xs" onclick="openEditUser('${u.id}')">✏️</button>
+        <button class="btn btn-ghost btn-xs" onclick="toggleUserStatus('${u.id}')">${u.status==='active'?'🔒':'🔓'}</button>
+        <button class="btn btn-danger btn-xs" onclick="confirmDeleteUser('${u.id}')">🗑</button>
+      </td>
+    </tr>`;
+  }).join('');
+}
+function initModuleChecks(){
+  const c=document.getElementById('adm-module-checks');if(!c)return;
+  c.innerHTML=MODULES.map(m=>`<label style="display:flex;align-items:center;gap:5px;font-size:11px;cursor:pointer;padding:3px 0"><input type="checkbox" value="${m}" checked style="accent-color:var(--accent)"> ${m}</label>`).join('');
+}
+function openAddUser(){
+  editingUserId=null;
+  document.getElementById('adm-user-modal-title').textContent='Ajouter un utilisateur';
+  document.getElementById('u-name').value='';document.getElementById('u-email').value='';
+  document.getElementById('u-dept').value='';document.getElementById('u-role').value='Chef de projet';
+  initModuleChecks();document.getElementById('adm-user-modal').classList.remove('hidden');
+}
+function openEditUser(id){
+  const u=admUsers.find(x=>x.id===id);if(!u)return;
+  editingUserId=id;
+  document.getElementById('adm-user-modal-title').textContent="Modifier l'utilisateur";
+  document.getElementById('u-name').value=u.name;document.getElementById('u-email').value=u.email;
+  document.getElementById('u-dept').value=u.dept;document.getElementById('u-role').value=u.role;
+  initModuleChecks();
+  document.querySelectorAll('#adm-module-checks input').forEach(cb=>{cb.checked=u.modules.includes(cb.value)});
+  document.getElementById('adm-user-modal').classList.remove('hidden');
+}
+function saveUser(){
+  const name=document.getElementById('u-name').value.trim(),email=document.getElementById('u-email').value.trim();
+  if(!name||!email){alert('Nom et email obligatoires');return}
+  const role=document.getElementById('u-role').value;
+  const modules=[...document.querySelectorAll('#adm-module-checks input:checked')].map(c=>c.value);
+  const initials=name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const color=ROLE_COLORS[role]||'#888';
+  if(editingUserId){
+    const u=admUsers.find(x=>x.id===editingUserId);
+    Object.assign(u,{name,email,dept:document.getElementById('u-dept').value,role,modules,initials,color});
+    addAudit('edit','✏️',`<b>Jean Dupont</b> a modifié le compte <b>${name}</b>`);
+  } else {
+    admUsers.push({id:'u'+Date.now(),name,email,dept:document.getElementById('u-dept').value,role,status:'pending',last:'Invitation envoyée',tickets:0,modules,initials,color});
+    addAudit('add','📧',`<b>Jean Dupont</b> a invité <b>${name}</b> (${role})`);
+  }
+  renderAdmUsers();closeModal('adm-user-modal');
+}
+function toggleUserStatus(id){
+  const u=admUsers.find(x=>x.id===id);if(!u)return;
+  u.status=u.status==='active'?'inactive':'active';
+  u.last=u.status==='active'?"À l'instant":'Désactivé';
+  addAudit('lock',u.status==='active'?'🔓':'🔒',`Compte <b>${u.name}</b> ${u.status==='active'?'réactivé':'désactivé'}`);
+  renderAdmUsers();
+}
+function confirmDeleteUser(id){
+  const u=admUsers.find(x=>x.id===id);if(!u)return;
+  document.getElementById('adm-del-msg').innerHTML=`Vous allez supprimer définitivement le compte de <b>${u.name}</b> (${u.email}).<br><br>Cette action est irréversible.`;
+  document.getElementById('adm-del-confirm').onclick=()=>{
+    addAudit('del','🗑️',`Compte <b>${u.name}</b> supprimé`);
+    admUsers=admUsers.filter(x=>x.id!==id);renderAdmUsers();closeModal('adm-del-modal');
+  };
+  document.getElementById('adm-del-modal').classList.remove('hidden');
+}
+
+/* ════════════════════════════════════════════
+   ADMIN — ROLES
+════════════════════════════════════════════ */
+function renderAdmRoles(){
+  document.getElementById('adm-roles-grid').innerHTML=admRoles.map(r=>`
+    <div class="role-card${selectedRoleId===r.id?' selected':''}" onclick="selectRole('${r.id}')">
+      <div class="role-color-bar" style="background:${r.color}"></div>
+      <div class="role-card-name">${r.name}</div>
+      <div class="role-card-desc">${r.desc}</div>
+      <div class="role-card-meta">
+        <span class="badge" style="background:${r.color}15;color:${r.color};border:1px solid ${r.color}25">${r.users} utilisateur${r.users!==1?'s':''}</span>
+        <button class="btn btn-ghost btn-xs" onclick="event.stopPropagation();openEditRole('${r.id}')">Éditer</button>
+      </div>
+    </div>`).join('');
+  renderRoleDetail();
+}
+function selectRole(id){selectedRoleId=selectedRoleId===id?null:id;renderAdmRoles()}
+function renderRoleDetail(){
+  const panel=document.getElementById('adm-role-detail');if(!panel)return;
+  if(!selectedRoleId){panel.innerHTML='';return}
+  const r=admRoles.find(x=>x.id===selectedRoleId);if(!r){panel.innerHTML='';return}
+  const ru=admUsers.filter(u=>u.role===r.name);
+  panel.innerHTML=`<div class="card"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px"><span style="font-size:12px;font-weight:600">Détail — <span style="color:${r.color}">${r.name}</span></span><button class="btn btn-ghost btn-xs" onclick="openEditRole('${r.id}')">✏️ Modifier</button></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px">
+      <div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:9px">Permissions</div>
+        ${ALL_PERMS.map(p=>{const has=r.perms.includes(p.id);return`<div style="display:flex;align-items:center;gap:7px;padding:4px 0;border-bottom:1px solid var(--border)"><span class="${has?'perm-on':'perm-off'}">${has?'<span class="p-check">✓</span>':'<span class="p-dash">—</span>'}</span><span style="font-size:11px;${has?'':'color:var(--text3)'}">${p.name}</span></div>`}).join('')}
+      </div>
+      <div><div style="font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;margin-bottom:9px">Utilisateurs</div>
+        ${ru.length?ru.map(u=>`<div style="display:flex;align-items:center;gap:7px;padding:5px 0;border-bottom:1px solid var(--border)">${avHtml(u.id,26)}<div><div style="font-size:11px;font-weight:500">${u.name}</div><div style="font-size:10px;color:var(--text3)">${u.dept}</div></div></div>`).join(''):'<div style="font-size:11px;color:var(--text3);padding:7px 0">Aucun utilisateur assigné</div>'}
+      </div>
+    </div>
+  </div>`;
+}
+function initPermToggles(existingPerms=[]){
+  const c=document.getElementById('adm-perm-toggles');if(!c)return;
+  c.innerHTML=ALL_PERMS.map(p=>`<div class="perm-row"><div style="flex:1"><div class="perm-name">${p.name}</div><div class="perm-hint">${p.hint}</div></div>
+    <button class="toggle ${existingPerms.includes(p.id)?'on':'off'}" id="ptog-${p.id}" onclick="this.classList.toggle('on');this.classList.toggle('off')"></button>
+  </div>`).join('');
+}
+function openAddRole(){
+  document.getElementById('adm-role-modal-title').textContent='Nouveau rôle';
+  document.getElementById('r-name').value='';document.getElementById('r-desc').value='';
+  initPermToggles();document.getElementById('adm-role-modal').classList.remove('hidden');
+}
+function openEditRole(id){
+  const r=admRoles.find(x=>x.id===id);if(!r)return;
+  document.getElementById('adm-role-modal-title').textContent='Modifier — '+r.name;
+  document.getElementById('r-name').value=r.name;document.getElementById('r-desc').value=r.desc;
+  document.getElementById('r-color').value=r.color;
+  initPermToggles(r.perms);document.getElementById('adm-role-modal').classList.remove('hidden');
+}
+function saveRole(){
+  const name=document.getElementById('r-name').value.trim();if(!name){alert('Nom obligatoire');return}
+  const perms=ALL_PERMS.filter(p=>document.getElementById('ptog-'+p.id)?.classList.contains('on')).map(p=>p.id);
+  const color=document.getElementById('r-color').value;
+  const desc=document.getElementById('r-desc').value;
+  const existing=admRoles.find(r=>r.name===name);
+  if(existing){Object.assign(existing,{color,desc,perms});}
+  else{admRoles.push({id:'r'+Date.now(),name,color,desc,users:0,perms});}
+  addAudit('add','🔑',`Rôle <b>${name}</b> créé/modifié par <b>Jean Dupont</b>`);
+  renderAdmRoles();renderAdmMatrix();closeModal('adm-role-modal');
+}
+
+/* ════════════════════════════════════════════
+   ADMIN — MATRIX
+════════════════════════════════════════════ */
+function renderAdmMatrix(){
+  const el=document.getElementById('adm-perm-matrix');if(!el)return;
+  el.innerHTML=`<thead><tr>
+    <th style="text-align:left;font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:.7px;padding:8px 12px;border-bottom:1px solid var(--border);min-width:150px">Permission</th>
+    ${admRoles.map(r=>`<th style="font-size:10px;color:${r.color};text-transform:uppercase;letter-spacing:.5px;padding:8px 12px;border-bottom:1px solid var(--border);text-align:center;min-width:90px">${r.name}</th>`).join('')}
+  </tr></thead><tbody>
+    ${ALL_PERMS.map(p=>`<tr style="border-bottom:1px solid var(--border)">
+      <td style="padding:9px 12px"><div style="font-size:11px;font-weight:500">${p.name}</div><div style="font-size:10px;color:var(--text3)">${p.hint}</div></td>
+      ${admRoles.map(r=>`<td style="text-align:center;padding:9px 12px"><span class="${r.perms.includes(p.id)?'perm-on':'perm-off'}">${r.perms.includes(p.id)?'<span class="p-check">✓</span>':'<span class="p-dash">—</span>'}</span></td>`).join('')}
+    </tr>`).join('')}
+  </tbody>`;
+}
+
+/* ════════════════════════════════════════════
+   ADMIN — AUDIT & SESSIONS
+════════════════════════════════════════════ */
+function renderAuditLog(){
+  const f=document.getElementById('audit-filter-sel')?.value||'';
+  const logs=f?auditLog.filter(l=>l.type===f):auditLog;
+  const logColor={add:'log-add',edit:'log-edit',del:'log-del',lock:'log-lock'};
+  const el=document.getElementById('adm-audit-log');if(!el)return;
+  el.innerHTML=logs.map(l=>`<div class="log-item"><div class="log-icon ${logColor[l.type]}">${l.icon}</div><div style="flex:1"><div class="log-action">${l.text}</div><div class="log-meta">${l.time} · par ${l.user}</div></div></div>`).join('')||'<div style="padding:20px;text-align:center;color:var(--text3);font-size:11px">Aucune entrée</div>';
+}
+function renderSessions(){
+  const el=document.getElementById('adm-sessions-list');if(!el)return;
+  el.innerHTML=admSessions.map((s,i)=>{
+    const u=admUsers.find(x=>x.id===s.uid)||{name:'?',initials:'?',color:'#888'};
+    return`<div class="card" style="margin-bottom:10px"><div style="display:flex;align-items:center;gap:13px">
+      <div class="av av-lg" style="background:${u.color}20;color:${u.color}">${u.initials}</div>
+      <div style="flex:1">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:2px">
+          <span style="font-size:12px;font-weight:600">${u.name}</span>
+          ${s.current?'<span class="badge b-active">Session courante</span>':''}
+        </div>
+        <div style="font-size:10px;color:var(--text3)">${s.browser} · ${s.os} · ${s.location}</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:1px">IP: ${s.ip} · Connecté ${s.started}</div>
+      </div>
+      ${!s.current?`<button class="btn btn-danger btn-sm" onclick="revokeSession(${i})">Révoquer</button>`:'<span style="font-size:10px;color:var(--text3)">Vous</span>'}
+    </div></div>`;
+  }).join('');
+}
+function revokeSession(i){
+  admSessions.splice(i,1);renderSessions();
+  addAudit('lock','🔓','Session révoquée manuellement');
+}
+function revokeAllSessions(){admSessions=admSessions.filter(s=>s.current);renderSessions()}
+
+/* ════════════════════════════════════════════
+   INIT
+════════════════════════════════════════════ */
+document.getElementById('filter-assignee').innerHTML='<option value="">Tous</option>'+TEAM.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+updateStats();
+renderTable();
+</script>
+<!-- ══════════════════ PROFILE SWITCHER MODAL ══════════════════ -->
+<div class="adm-modal-bg hidden" id="profile-modal" onclick="if(event.target===this)closeModal('profile-modal')">
+  <div class="adm-modal fade-in" style="max-width:420px">
+    <div class="adm-modal-head">
+      <div class="adm-modal-title">Changer de profil utilisateur</div>
+      <button class="close-x" onclick="closeModal('profile-modal')">✕</button>
+    </div>
+    <div class="adm-modal-body">
+      <p style="font-size:11px;color:var(--text3);margin-bottom:14px">Simulez différents rôles pour tester les accès et permissions.</p>
+      <div id="profile-list"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════ PROFILS & CONTRÔLE D'ACCÈS ══════════════ */
+const PROFILES = [
+  {id:'u1',name:'Jean Dupont',role:'Chef de projet',roleKey:'Chef de projet',initials:'JD',color:'#3b82f6',isAdmin:false},
+  {id:'u2',name:'Marie Simon',role:'Expert ERP',roleKey:'Développeur',initials:'MS',color:'#8b5cf6',isAdmin:false},
+  {id:'u3',name:'Pierre Chen',role:'Dev EDI',roleKey:'Développeur',initials:'PC',color:'#10b981',isAdmin:false},
+  {id:'u4',name:'Alice Laurent',role:'Comptabilité',roleKey:'Expert métier',initials:'AL',color:'#f59e0b',isAdmin:false},
+  {id:'u5',name:'Romain Blanc',role:'DSI — Administrateur',roleKey:'Administrateur',initials:'RB',color:'#ef4444',isAdmin:true},
+];
+
+let currentProfile = PROFILES[0];
+
+function applyProfile(p){
+  currentProfile = p;
+  document.getElementById('sb-av').textContent = p.initials;
+  document.getElementById('sb-av').style.background = `linear-gradient(135deg,${p.color}cc,${p.color})`;
+  document.getElementById('sb-av').style.color = '#fff';
+  document.getElementById('sb-name').textContent = p.name;
+  document.getElementById('sb-role').textContent = p.role;
+  const adminPill = document.getElementById('sb-admin-pill');
+  const adminNav = document.getElementById('admin-nav-section');
+  if(p.isAdmin){
+    adminPill.style.display='';
+    adminNav.style.display='';
+  } else {
+    adminPill.style.display='none';
+    adminNav.style.display='none';
+    // Si on est sur une vue admin, retourner au board
+    const currentView = document.querySelector('.content:not(.hidden)');
+    if(currentView && currentView.id.startsWith('view-adm-')){
+      showView('board', document.getElementById('nav-board'));
+    }
+  }
+  closeModal('profile-modal');
+}
+
+function openProfileSwitcher(){
+  const list = document.getElementById('profile-list');
+  list.innerHTML = PROFILES.map(p=>`
+    <div onclick="applyProfile(PROFILES.find(x=>x.id==='${p.id}'))" style="display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:8px;cursor:pointer;border:${p.id===currentProfile.id?'2px solid var(--accent)':'1px solid var(--border)'};background:${p.id===currentProfile.id?'var(--accent-light)':'var(--surface)'};margin-bottom:8px;transition:all .15s">
+      <div style="width:36px;height:36px;border-radius:50%;background:${p.color};display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0">${p.initials}</div>
+      <div style="flex:1">
+        <div style="font-size:12px;font-weight:600;color:var(--text)">${p.name}</div>
+        <div style="font-size:10px;color:var(--text3)">${p.role}</div>
+      </div>
+      ${p.isAdmin?`<span style="font-size:9px;background:#fee2e2;color:#b91c1c;padding:2px 7px;border-radius:6px;border:1px solid #fecaca;font-weight:600">🔐 Admin</span>`:`<span style="font-size:9px;background:var(--surface2);color:var(--text3);padding:2px 7px;border-radius:6px;border:1px solid var(--border)">${p.roleKey}</span>`}
+      ${p.id===currentProfile.id?'<span style="color:var(--accent);font-size:14px">✓</span>':''}
+    </div>
+  `).join('');
+  document.getElementById('profile-modal').classList.remove('hidden');
+}
+
+// Initialiser le profil au démarrage
+applyProfile(currentProfile);
+</script>
+</body>
+</html>
